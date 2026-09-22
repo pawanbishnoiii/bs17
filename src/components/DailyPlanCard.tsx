@@ -1,10 +1,10 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CalendarDays, Check, Loader2, Play, RefreshCw, SkipForward, X } from "lucide-react";
 import {
-  PLAN_VISIBLE_LIMIT,
+  TOP_TASKS_COUNT,
   fetchPlan,
   generatePlan,
   localDateKey,
