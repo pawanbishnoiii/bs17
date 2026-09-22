@@ -32,8 +32,8 @@ async function fetchSubjectCatalog(): Promise<CatalogEntry[]> {
   return (data ?? []).map((row) => ({
     id: row.id,
     name: row.name,
-    stream: row.stream,
-    color: row.color,
+    stream: row.stream ?? "",
+    color: row.color ?? "",
     chapters: Array.isArray(row.chapters) ? (row.chapters as string[]) : [],
   }));
 }

@@ -142,7 +142,7 @@ export const adminUsers = createServerFn({ method: "GET" })
       avatar_url: p.avatar_url ?? null,
       onboarded: !!p.onboarded,
       last_seen_at: p.last_seen_at ?? null,
-      created_at: p.created_at,
+      created_at: p.created_at ?? "",
       total_minutes: stats.get(p.id)?.minutes ?? 0,
       session_count: stats.get(p.id)?.count ?? 0,
     }));
@@ -278,7 +278,7 @@ export const notificationHistory = createServerFn({ method: "GET" })
     // One broadcast fans out to many rows; group them back into single sends.
     const groups = new Map<string, NotificationSend & { recipients: number; read_count: number }>();
     for (const r of rows ?? []) {
-      const minute = r.created_at.slice(0, 16);
+      const minute = (r.created_at ?? "").slice(0, 16);
       const key = `${minute}|${r.audience ?? "all"}|${r.title}`;
       const existing = groups.get(key);
       if (existing) {
@@ -295,7 +295,7 @@ export const notificationHistory = createServerFn({ method: "GET" })
         audience: r.audience ?? null,
         recipients: 1,
         read_count: r.read ? 1 : 0,
-        sent_at: r.created_at,
+        sent_at: r.created_at ?? "",
       });
       if (groups.size >= data.limit) break;
     }
@@ -465,9 +465,9 @@ export const adminEvents = createServerFn({ method: "GET" })
         display_name: p?.display_name ?? null,
         email: p?.email ?? null,
         event: r.event,
-        path: r.path,
-        platform: r.platform,
-        created_at: r.created_at,
+        path: r.path ?? null,
+        platform: r.platform ?? null,
+        created_at: r.created_at ?? "",
         ip: str(m, "ip"),
         device: str(m, "device"),
         browser: str(m, "browser"),

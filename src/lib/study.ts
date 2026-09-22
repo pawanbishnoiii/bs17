@@ -497,7 +497,7 @@ export async function startBreak(session_id: string | null, kind: string, note?:
   const user_id = await uid();
   const { data, error } = await supabase
     .from("session_breaks")
-    .insert({ user_id, session_id, kind, note: note ?? null })
+    .insert({ user_id, session_id, kind, note: note ?? null, started_at: new Date().toISOString() })
     .select("*")
     .single();
   if (error) throw error;
