@@ -230,6 +230,15 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
           })}
         </ul>
       )}
+      {ranked.length > TOP_TASKS_COUNT ? (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="mt-4 w-full rounded-2xl border border-border py-2.5 text-sm font-bold text-brand transition-colors hover:bg-secondary"
+        >
+          {showAll ? "See less" : `See more (${ranked.length - TOP_TASKS_COUNT} more)`}
+        </button>
+      ) : null}
     </section>
   );
 }
