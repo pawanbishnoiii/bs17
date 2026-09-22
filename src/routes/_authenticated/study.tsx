@@ -281,7 +281,7 @@ function StudySetupPage() {
                         className="field-control pl-11"
                       />
                     </label>
-                    <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
                       {subjects.isLoading ? (
                         <div className="contents">
                           {[0, 1, 2].map((i) => (
@@ -343,7 +343,7 @@ function StudySetupPage() {
                         <Button variant="outline" size="sm" className="border-background/25 bg-transparent text-background" onClick={() => setForm({ ...form, chapter: "", topic: "" })}>Change</Button>
                       </div>
                     ) : activeSubject && activeSubject.chapters.length > 0 ? (
-                      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                      <div className="mt-4 grid grid-cols-2 gap-2">
                         {activeSubject.chapters.map((c) => {
                           const on = form.chapter === c;
                           return (
@@ -483,8 +483,8 @@ function StudySetupPage() {
 
         <section className="surface-card mt-6 overflow-hidden p-5 sm:p-6">
           <p className="section-label">Your natural pace</p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl bg-lavender-soft p-4 sm:col-span-2">
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="col-span-2 rounded-2xl bg-lavender-soft p-4">
               <p className="text-3xl font-extrabold">{fmtHM(pace.data?.avg_chapter_minutes ?? 0)}</p>
               <p className="mt-1 text-sm font-semibold">average to finish a chapter</p>
               <p className="mt-2 text-xs text-muted-foreground">
@@ -510,7 +510,7 @@ function StudySetupPage() {
         {subjectTargets.data?.length ? (
           <section className="surface-card mt-6 p-5 sm:p-6">
             <h2 className="text-xl font-bold">Subject targets</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
               {subjectTargets.data.map((target) => {
                 const subject = (subjects.data ?? []).find((row) => row.id === target.subject_id);
                 return (

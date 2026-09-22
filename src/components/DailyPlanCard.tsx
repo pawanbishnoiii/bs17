@@ -17,6 +17,7 @@ import {
   type PlanItem,
 } from "@/lib/plan";
 import { fmtHM, startOfToday, type Session } from "@/lib/study";
+import { DAY_MODE_COPY, dayMode } from "@/lib/goals";
 import { savePlanDone } from "@/lib/offline-actions";
 import { ActivityArtwork } from "@/components/study-ui";
 import owlIdle from "@/assets/owl-idle.png";
@@ -87,6 +88,7 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
       regenerate.mutate();
   }, [plan.isSuccess, plan.data, regenerate]);
 
+  const mode = dayMode();
   const [showAll, setShowAll] = useState(false);
   const all = plan.data ?? [];
   const ranked = visiblePlanItems(all);
@@ -139,6 +141,11 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
         </div>
       </div>
 
+      <div className="mt-4 rounded-2xl bg-secondary px-3 py-2.5">
+        <p className="text-xs font-extrabold tracking-tight">{DAY_MODE_COPY[mode].title}</p>
+        <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">{DAY_MODE_COPY[mode].hint}</p>
+      </div>
+
       {plan.isLoading ? (
         <div className="mt-5 flex items-center gap-4 rounded-2xl bg-secondary p-3"><img src={owlIdle} alt="" className="size-16 shrink-0 object-contain float-soft" /><p className="text-sm font-semibold text-muted-foreground">Building today's syllabus plan…</p></div>
       ) : rows.length === 0 ? (
@@ -151,42 +158,48 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
               ? Math.min(100, Math.round((minutes / item.target_minutes) * 100))
               : 0;
             return (
-              <li
-                key={item.id}
-                className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-border bg-panel p-3"
-              >
-                <ActivityArtwork
-                  kind={KIND_ART[item.session_kind] ?? "reading"}
-                  className="size-11 shrink-0"
-                />
-                <div className="min-w-[8rem] flex-1 basis-40">
-                  <p className="truncate text-sm font-bold">
-                    {item.chapter_name ?? item.subject_name ?? "Focus block"}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground capitalize">
-                    {item.subject_name ? `${item.subject_name} · ` : ""}
-                    {KIND_LABEL[item.session_kind] ?? item.session_kind} · min {fmtHM(item.target_minutes)}
-                    {minutes > 0 ? ` · ${fmtHM(minutes)} done` : ""}
-                  </p>
-                  <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-muted">
-                    <span
-                      className="block h-full rounded-full bg-brand transition-[width] duration-700"
-                      style={{ width: `${status === "complete" ? 100 : pct}%` }}
-                    />
-                  </span>
-                </div>
-                <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${style.cls}`}>
+              <li key={item.id} className="rounded-2xl border border-border bg-panel p-3">
+                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
+                  <ActivityArtwork
+                    kind={KIND_ART[item.session_kind] ?? "reading"}
+                    className="size-11 shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold">
+                      {item.chapter_name ?? item.subject_name ?? "Focus block"}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs font-semibold text-muted-foreground capitalize">
+                      {item.subject_name ? `${item.subject_name} · ` : ""}
+                      {KIND_LABEL[item.session_kind] ?? item.session_kind}
+                      {item.source === "resume" ? " · resume" : ""}
+                    </p>
+                    <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-muted">
+                      <span
+                        className="block h-full rounded-full bg-brand transition-[width] duration-700"
+                        style={{ width: `${status === "complete" ? 100 : pct}%` }}
+                      />
+                    </span>
+                    <p className="mt-1 text-[10px] font-semibold text-muted-foreground">
+                      {minutes > 0 ? `${fmtHM(minutes)} done` : "not started"}
+                      {item.review_stage != null && item.review_stage > 0
+                        ? ` · pass ${item.review_stage + 1}`
+                        : ""}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${style.cls}`}>
                     {style.label}
                   </span>
+                </div>
+
+                <div className="mt-3 flex items-center justify-end gap-1.5">
                   {onStart && status !== "complete" ? (
                     <button
                       type="button"
                       onClick={() => onStart(item)}
                       aria-label={`Start ${item.chapter_name ?? item.subject_name ?? "plan item"}`}
-                      className="grid size-9 place-items-center rounded-full bg-foreground text-background"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-foreground px-3 text-xs font-bold text-background"
                     >
-                      <Play className="size-4" aria-hidden="true" />
+                      <Play className="size-4" aria-hidden="true" /> Start
                     </button>
                   ) : null}
                   {status !== "complete" ? (
