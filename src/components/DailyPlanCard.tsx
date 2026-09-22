@@ -87,9 +87,11 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
       regenerate.mutate();
   }, [plan.isSuccess, plan.data, regenerate]);
 
+  const [showAll, setShowAll] = useState(false);
   const all = plan.data ?? [];
-  const items = visiblePlanItems(all);
-  const queued = all.filter((i) => i.status === "pending" && !i.completed_at).length;
+  const ranked = visiblePlanItems(all);
+  const items = showAll ? ranked : ranked.slice(0, TOP_TASKS_COUNT);
+  const hidden = ranked.length - items.length;
   const rows = items.map((item) => {
     const minutes = planItemMinutes(item, sessions, since);
     return { item, minutes, status: planItemStatus(item, minutes) };
@@ -113,7 +115,8 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
               month: "short",
             })}{" "}
             · {doneCount}/{items.length} done · {fmtHM(plannedMinutes)} planned
-            {queued > PLAN_VISIBLE_LIMIT ? ` · ${queued - PLAN_VISIBLE_LIMIT} queued` : ""}
+            {hidden > 0 ? ` · ${hidden} more queued` : ""}
+
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
