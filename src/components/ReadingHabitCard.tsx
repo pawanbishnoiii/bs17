@@ -9,6 +9,7 @@ import {
   fetchReadingLogs,
   readingStatus,
   saveReadingGoals,
+  newspaperGoalFor,
   undoReading,
 } from "@/lib/study";
 import { saveReadingLog } from "@/lib/offline-actions";
@@ -27,6 +28,9 @@ export function ReadingHabitCard() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [daily, setDaily] = useState("");
+  const [oddEven, setOddEven] = useState(false);
+  const [oddMin, setOddMin] = useState("");
+  const [evenMin, setEvenMin] = useState("");
 
   const logs = useQuery({ queryKey: ["reading-logs"], queryFn: fetchReadingLogs });
   const goalsQ = useQuery({ queryKey: ["reading-goals"], queryFn: fetchReadingGoals });
@@ -96,6 +100,9 @@ export function ReadingHabitCard() {
           Math.min(600, Number(daily) || goals.newspaper_daily_minutes),
         ),
         magazine_monthly_minutes: goals.magazine_monthly_minutes,
+        odd_even_enabled: oddEven,
+        odd_day_minutes: Math.max(1, Math.min(600, Number(oddMin) || goals.odd_day_minutes)),
+        even_day_minutes: Math.max(1, Math.min(600, Number(evenMin) || goals.even_day_minutes)),
       }),
     onSuccess: () => {
       setEditing(false);
@@ -143,6 +150,9 @@ export function ReadingHabitCard() {
             aria-label="Edit daily reading goal"
             onClick={() => {
               setDaily(String(goals.newspaper_daily_minutes));
+              setOddEven(goals.odd_even_enabled);
+              setOddMin(String(goals.odd_day_minutes));
+              setEvenMin(String(goals.even_day_minutes));
               setEditing((v) => !v);
             }}
             className="grid size-8 place-items-center rounded-full border-2 border-border text-muted-foreground"
@@ -173,6 +183,44 @@ export function ReadingHabitCard() {
                   className="mt-1 h-11 w-full rounded-xl border-2 border-border bg-panel px-3 text-sm font-semibold text-foreground"
                 />
               </label>
+
+              <label className="flex items-center gap-2 text-[11px] font-bold">
+                <input
+                  type="checkbox"
+                  checked={oddEven}
+                  onChange={(e) => setOddEven(e.target.checked)}
+                  className="size-4"
+                />
+                Odd / even date par alag target
+              </label>
+
+              {oddEven ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block text-[11px] font-bold text-muted-foreground">
+                    Odd date (1, 3, 5…)
+                    <input
+                      type="number"
+                      min={1}
+                      max={600}
+                      value={oddMin}
+                      onChange={(e) => setOddMin(e.target.value)}
+                      className="mt-1 h-11 w-full rounded-xl border-2 border-border bg-panel px-3 text-sm font-semibold text-foreground"
+                    />
+                  </label>
+                  <label className="block text-[11px] font-bold text-muted-foreground">
+                    Even date (2, 4, 6…)
+                    <input
+                      type="number"
+                      min={1}
+                      max={600}
+                      value={evenMin}
+                      onChange={(e) => setEvenMin(e.target.value)}
+                      className="mt-1 h-11 w-full rounded-xl border-2 border-border bg-panel px-3 text-sm font-semibold text-foreground"
+                    />
+                  </label>
+                </div>
+              ) : null}
+
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -230,7 +278,7 @@ export function ReadingHabitCard() {
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold">Today</span>
             <span className="num block text-[11px] text-muted-foreground">
-              {status.newspaperTodayMinutes} / {goals.newspaper_daily_minutes} min
+              {status.newspaperTodayMinutes} / {newspaperGoalFor(goals)} min
               {status.newspaperToday ? " · goal reached" : ""}
             </span>
           </span>

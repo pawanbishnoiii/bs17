@@ -31,6 +31,7 @@ import { ReadingHabitCard } from "@/components/ReadingHabitCard";
 import { DailyPlanCard } from "@/components/DailyPlanCard";
 import { TodayStudyAnalytics } from "@/components/TodayStudyAnalytics";
 import { LevelProgressCard } from "@/components/LevelProgressCard";
+import { NoticeBoard } from "@/components/NoticeBoard";
 import { studyStreak } from "@/lib/streak";
 
 import {
@@ -389,6 +390,9 @@ function TodayPage() {
             </div>
           ))}
         </section>
+
+        {/* Private notice board */}
+        <NoticeBoard />
 
         {/* Compulsory reading — daily newspaper + monthly magazine */}
         <ReadingHabitCard />
@@ -961,19 +965,26 @@ function ScopeChart({
       const d = new Date(start);
       d.setDate(d.getDate() + i);
       days.push({
-        label: DAYS[d.getDay()],
-        h: (perDayFromSessions(sessions, d) / 60).toFixed(1),
+        label: `${DAYS[d.getDay()]} ${d.getDate()}`,
+        h: Number((perDayFromSessions(sessions, d) / 60).toFixed(2)),
         goal: dailyGoal,
       });
     }
     return (
-      <BarChart data={days}>
+      <BarChart data={days} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke="var(--border)" />
         <XAxis
           dataKey="label"
           tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
           axisLine={false}
           tickLine={false}
+        />
+        <YAxis
+          width={38}
+          tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+          axisLine={false}
+          tickLine={false}
+          tickFormatter={(v: number) => `${v}h`}
         />
         <Tooltip
           contentStyle={{
@@ -982,11 +993,16 @@ function ScopeChart({
             borderRadius: 12,
             fontSize: 12,
           }}
+          formatter={(value: number, name: string) => [
+            `${Math.floor(value)}h ${Math.round((value % 1) * 60)}m`,
+            name === "goal" ? "Daily goal" : "Studied",
+          ]}
         />
-        <Bar dataKey="h" fill="var(--brand)" radius={[6, 6, 0, 0]} />
+        <Bar dataKey="h" name="Studied" fill="var(--brand)" radius={[6, 6, 0, 0]} />
         <Line
           type="monotone"
           dataKey="goal"
+          name="goal"
           stroke="var(--warm)"
           dot={false}
           strokeDasharray="4 4"
@@ -995,40 +1011,35 @@ function ScopeChart({
     );
   }
 
-  // month
-  const weeks = [];
+  // month — one bar per day, so it is obvious which day had how many hours
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  for (let w = 0; w < 5; w++) {
-    const ws = new Date(monthStart);
-    ws.setDate(ws.getDate() + w * 7);
-    const we = new Date(ws);
-    we.setDate(we.getDate() + 6);
-    if (ws > monthEnd) break;
-    let m = 0;
-    for (const s of sessions) {
-      const d = new Date(s.started_at);
-      if (d >= ws && d <= we) m += s.duration_minutes ?? 0;
-    }
-    weeks.push({ label: `W${w + 1}`, h: (m / 60).toFixed(1), goal: weeklyGoal });
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysOfMonth = [];
+  for (let day = 1; day <= monthEnd; day++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), day);
+    daysOfMonth.push({
+      label: String(day),
+      h: Number((perDayFromSessions(sessions, d) / 60).toFixed(2)),
+      goal: dailyGoal,
+    });
   }
   return (
-    <AreaChart data={weeks}>
-      <defs>
-        <linearGradient id="monthFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="5%" stopColor="var(--brand)" stopOpacity={0.35} />
-          <stop offset="95%" stopColor="var(--brand)" stopOpacity={0} />
-        </linearGradient>
-      </defs>
+    <BarChart data={daysOfMonth} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
       <CartesianGrid vertical={false} stroke="var(--border)" />
       <XAxis
         dataKey="label"
+        tick={{ fontSize: 9, fill: "var(--muted-foreground)" }}
+        axisLine={false}
+        tickLine={false}
+        interval={2}
+      />
+      <YAxis
+        width={38}
         tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
         axisLine={false}
         tickLine={false}
+        tickFormatter={(v: number) => `${v}h`}
       />
-      <YAxis hide />
       <Tooltip
         contentStyle={{
           background: "var(--popover)",
@@ -1036,10 +1047,17 @@ function ScopeChart({
           borderRadius: 12,
           fontSize: 12,
         }}
+        labelFormatter={(label: string) =>
+          `${label} ${now.toLocaleDateString(undefined, { month: "long" })}`
+        }
+        formatter={(value: number, name: string) => [
+          `${Math.floor(value)}h ${Math.round((value % 1) * 60)}m`,
+          name === "goal" ? "Daily goal" : "Studied",
+        ]}
       />
-      <Area type="monotone" dataKey="h" stroke="var(--brand)" fill="url(#monthFill)" />
-      <Line type="monotone" dataKey="goal" stroke="var(--warm)" dot={false} strokeDasharray="4 4" />
-    </AreaChart>
+      <Bar dataKey="h" name="Studied" fill="var(--brand)" radius={[4, 4, 0, 0]} />
+      <Line type="monotone" dataKey="goal" name="goal" stroke="var(--warm)" dot={false} strokeDasharray="4 4" />
+    </BarChart>
   );
 }
 

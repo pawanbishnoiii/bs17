@@ -211,12 +211,16 @@ export type Database = {
           next_review_at: string | null
           practice_minutes: number | null
           practice_sessions: number | null
+          progress_pct: number
           reading_minutes: number | null
           reading_sessions: number | null
           recall_samples: number | null
+          resume_note: string | null
+          resume_subtopic_id: string | null
           review_stage: number | null
           revision_minutes: number | null
           revision_sessions: number | null
+          stopped_at: string | null
           subject_id: string
           updated_at: string | null
           user_id: string
@@ -234,12 +238,16 @@ export type Database = {
           next_review_at?: string | null
           practice_minutes?: number | null
           practice_sessions?: number | null
+          progress_pct?: number
           reading_minutes?: number | null
           reading_sessions?: number | null
           recall_samples?: number | null
+          resume_note?: string | null
+          resume_subtopic_id?: string | null
           review_stage?: number | null
           revision_minutes?: number | null
           revision_sessions?: number | null
+          stopped_at?: string | null
           subject_id: string
           updated_at?: string | null
           user_id: string
@@ -257,12 +265,16 @@ export type Database = {
           next_review_at?: string | null
           practice_minutes?: number | null
           practice_sessions?: number | null
+          progress_pct?: number
           reading_minutes?: number | null
           reading_sessions?: number | null
           recall_samples?: number | null
+          resume_note?: string | null
+          resume_subtopic_id?: string | null
           review_stage?: number | null
           revision_minutes?: number | null
           revision_sessions?: number | null
+          stopped_at?: string | null
           subject_id?: string
           updated_at?: string | null
           user_id?: string
@@ -814,6 +826,36 @@ export type Database = {
         }
         Relationships: []
       }
+      notices: {
+        Row: {
+          body: string
+          created_at: string
+          done: boolean
+          id: string
+          pinned: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          done?: boolean
+          id?: string
+          pinned?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          done?: boolean
+          id?: string
+          pinned?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_path: string | null
@@ -994,22 +1036,31 @@ export type Database = {
       reading_goals: {
         Row: {
           created_at: string | null
+          even_day_minutes: number
           magazine_monthly_minutes: number | null
           newspaper_daily_minutes: number | null
+          odd_day_minutes: number
+          odd_even_enabled: boolean
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          even_day_minutes?: number
           magazine_monthly_minutes?: number | null
           newspaper_daily_minutes?: number | null
+          odd_day_minutes?: number
+          odd_even_enabled?: boolean
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
+          even_day_minutes?: number
           magazine_monthly_minutes?: number | null
           newspaper_daily_minutes?: number | null
+          odd_day_minutes?: number
+          odd_even_enabled?: boolean
           updated_at?: string | null
           user_id?: string
         }
@@ -1811,7 +1862,10 @@ export type Database = {
           auto_stop_hours: number | null
           background_style: string | null
           daily_goal_hours: number | null
+          daily_goal_percent: number
           gender_palette_suggested: boolean | null
+          min_count_minutes: number
+          percent_per_hour: Json
           theme_mode: string | null
           timer_background_effects: boolean | null
           timer_keep_awake: boolean | null
@@ -1821,6 +1875,9 @@ export type Database = {
           user_id: string
           week_starts_monday: boolean | null
           weekly_goal_hours: number | null
+          weekly_goal_percent: number
+          weekly_growth_cap_percent: number
+          weekly_growth_factor: number
           widget_layout: Json | null
         }
         Insert: {
@@ -1830,7 +1887,10 @@ export type Database = {
           auto_stop_hours?: number | null
           background_style?: string | null
           daily_goal_hours?: number | null
+          daily_goal_percent?: number
           gender_palette_suggested?: boolean | null
+          min_count_minutes?: number
+          percent_per_hour?: Json
           theme_mode?: string | null
           timer_background_effects?: boolean | null
           timer_keep_awake?: boolean | null
@@ -1840,6 +1900,9 @@ export type Database = {
           user_id: string
           week_starts_monday?: boolean | null
           weekly_goal_hours?: number | null
+          weekly_goal_percent?: number
+          weekly_growth_cap_percent?: number
+          weekly_growth_factor?: number
           widget_layout?: Json | null
         }
         Update: {
@@ -1849,7 +1912,10 @@ export type Database = {
           auto_stop_hours?: number | null
           background_style?: string | null
           daily_goal_hours?: number | null
+          daily_goal_percent?: number
           gender_palette_suggested?: boolean | null
+          min_count_minutes?: number
+          percent_per_hour?: Json
           theme_mode?: string | null
           timer_background_effects?: boolean | null
           timer_keep_awake?: boolean | null
@@ -1859,6 +1925,9 @@ export type Database = {
           user_id?: string
           week_starts_monday?: boolean | null
           weekly_goal_hours?: number | null
+          weekly_goal_percent?: number
+          weekly_growth_cap_percent?: number
+          weekly_growth_factor?: number
           widget_layout?: Json | null
         }
         Relationships: []

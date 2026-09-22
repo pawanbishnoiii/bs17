@@ -15,6 +15,7 @@ import {
 import { fetchSubjects } from "@/lib/study";
 import { EmptyState, PageHeader, ResponsiveSheet } from "@/components/study-ui";
 import { ChapterNotesPanel } from "@/components/ChapterNotesPanel";
+import { ClassFolders } from "@/components/ClassFolders";
 import { Button } from "@/components/ui/button";
 import emptyCalendar from "@/assets/chronodeck-empty-calendar.png";
 
@@ -256,6 +257,9 @@ function ClassesPage() {
         )}
       </section>
       </div>
+
+      {/* Folder-style file manager for class material */}
+      <ClassFolders />
 
       {/* Chapter PDFs — upload, order, preview and download notes per chapter */}
       <ChapterNotesPanel />

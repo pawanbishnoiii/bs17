@@ -1285,12 +1285,25 @@ export const READING_TASKS: {
 export type ReadingGoals = {
   newspaper_daily_minutes: number;
   magazine_monthly_minutes: number;
+  /** Separate newspaper targets for odd and even dates of the month. */
+  odd_day_minutes: number;
+  even_day_minutes: number;
+  odd_even_enabled: boolean;
 };
 
 export const DEFAULT_READING_GOALS: ReadingGoals = {
   newspaper_daily_minutes: 15,
   magazine_monthly_minutes: 45,
+  odd_day_minutes: 20,
+  even_day_minutes: 20,
+  odd_even_enabled: false,
 };
+
+/** Today's newspaper target, honouring the odd / even day split when it is on. */
+export function newspaperGoalFor(goals: ReadingGoals, date = new Date()) {
+  if (!goals.odd_even_enabled) return goals.newspaper_daily_minutes;
+  return date.getDate() % 2 === 1 ? goals.odd_day_minutes : goals.even_day_minutes;
+}
 
 function isoDate(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -1300,7 +1313,9 @@ export async function fetchReadingGoals(): Promise<ReadingGoals> {
   const user_id = await uid();
   const { data, error } = await supabase
     .from("reading_goals")
-    .select("newspaper_daily_minutes,magazine_monthly_minutes")
+    .select(
+      "newspaper_daily_minutes,magazine_monthly_minutes,odd_day_minutes,even_day_minutes,odd_even_enabled",
+    )
     .eq("user_id", user_id)
     .maybeSingle();
   if (error) throw error;
@@ -1393,7 +1408,7 @@ export function readingStatus(logs: ReadingLog[], goals: ReadingGoals = DEFAULT_
 
   const todayMinutes = paper.get(today) ?? 0;
   const magazineMinutes = magazines.reduce((s, l) => s + (l.minutes ?? 0), 0);
-  const dailyGoal = Math.max(1, goals.newspaper_daily_minutes);
+  const dailyGoal = Math.max(1, newspaperGoalFor(goals));
   const monthlyGoal = Math.max(1, goals.magazine_monthly_minutes);
 
   return {
