@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session, Subject } from "@/lib/study";
 
 /** How many plan tasks are shown on the board at once. */
-export const PLAN_VISIBLE_LIMIT = 8;
+export const TOP_TASKS_COUNT = 5;
 
 /** One row of the automatic daily study plan. */
 export type PlanItem = {
@@ -79,10 +79,10 @@ export function rankPlanItems(items: PlanItem[]): PlanItem[] {
   return [...items].sort((a, b) => score(b) - score(a));
 }
 
-/** The active board: never more than {@link PLAN_VISIBLE_LIMIT} live tasks. */
+/** The full ranked board of live tasks (top {@link TOP_TASKS_COUNT} shown by default). */
 export function visiblePlanItems(items: PlanItem[]): PlanItem[] {
   const live = items.filter((i) => i.status === "pending" || i.completed_at);
-  return rankPlanItems(live).slice(0, PLAN_VISIBLE_LIMIT);
+  return rankPlanItems(live);
 }
 
 /** Ask the database to (re)build the plan for a date and return the new rows. */
