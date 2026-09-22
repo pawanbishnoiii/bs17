@@ -20,7 +20,7 @@ import { fmtHM, startOfToday, type Session } from "@/lib/study";
 import { savePlanDone } from "@/lib/offline-actions";
 import { ActivityArtwork } from "@/components/study-ui";
 import owlIdle from "@/assets/owl-idle.png";
-import beeAsset from "@/assets/bee-baby.riv.asset.json";
+import beeAsset from "@/assets/bee-baby.riv?url";
 import { RivePlayer } from "@/components/ui/rive-player";
 
 const STATUS_STYLE: Record<PlanStatus, { label: string; cls: string }> = {
@@ -117,7 +117,7 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {doneCount > 0 ? <RivePlayer src={beeAsset.url} className="hidden size-12 sm:block" /> : null}
+          {doneCount > 0 ? <RivePlayer src={beeAsset} className="hidden size-12 sm:block" /> : null}
           <button
             onClick={() => regenerate.mutate()}
             disabled={regenerate.isPending}

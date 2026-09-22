@@ -1,6 +1,6 @@
 import { Award, TrendingUp } from "lucide-react";
 import { RivePlayer } from "@/components/ui/rive-player";
-import levelAsset from "@/assets/user-level.riv.asset.json";
+import levelAsset from "@/assets/user-level.riv?url";
 
 export function LevelProgressCard({ level, totalXp, dailyGoal }: { level: number; totalXp: number; dailyGoal: number }) {
   const floor = Math.max(0, (level - 1) * 500);
@@ -16,7 +16,7 @@ export function LevelProgressCard({ level, totalXp, dailyGoal }: { level: number
           <p className="mt-2 text-xs text-muted-foreground">{500 - progress} XP to next level · suggested rhythm {suggested}h/day</p>
           <p className="mt-3 flex items-center gap-2 text-xs font-bold"><TrendingUp className="size-4 text-blue" /> Small wins daily. Missed days are recovery days, not failure.</p>
         </div>
-        <RivePlayer src={levelAsset.url} className="mx-auto size-28 sm:size-32" />
+        <RivePlayer src={levelAsset} className="mx-auto size-28 sm:size-32" />
       </div>
     </section>
   );

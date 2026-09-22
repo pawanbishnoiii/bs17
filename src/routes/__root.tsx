@@ -13,7 +13,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { DynamicBranding } from "@/components/DynamicBranding";
 import { LottiePlayer } from "@/components/ui/lottie-player";
-import error404 from "@/assets/error-404-upload.json.asset.json";
+import error404 from "@/assets/error-404-upload.json?url";
 
 import appCss from "../styles.css?url";
 import experienceCss from "../experience.css?url";
@@ -30,7 +30,7 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <LottiePlayer src={error404.url} className="mx-auto h-56 w-full max-w-xs" />
+        <LottiePlayer src={error404} className="mx-auto h-56 w-full max-w-xs" />
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           The page you're looking for doesn't exist or has been moved.

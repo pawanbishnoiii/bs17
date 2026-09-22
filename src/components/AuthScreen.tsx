@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { GoogleOneTap } from "@/components/GoogleOneTap";
 import authStudent from "@/assets/chronodeck-auth-student.png";
-import appLogo from "@/assets/bnoy-b-logo.png.asset.json";
+import appLogo from "@/assets/bnoy-b-logo.png";
 
 function GoogleMark() {
   return (
@@ -174,7 +174,7 @@ export function AuthScreen() {
       <header className="relative z-10 flex items-center justify-between px-5 pt-[calc(1rem+env(safe-area-inset-top))] md:absolute md:inset-x-0 md:top-0 md:px-10">
         <div className="flex items-center gap-2.5">
           <img
-            src={appLogo.url}
+            src={appLogo}
              alt="Bnoy Study"
             width={1024}
             height={1024}

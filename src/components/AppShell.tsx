@@ -18,7 +18,7 @@ import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { clientContext } from "@/lib/platform";
 import { syncDeviceTokenOnStart } from "@/lib/push";
-import appLogo from "@/assets/bnoy-b-logo.png.asset.json";
+import appLogo from "@/assets/bnoy-b-logo.png";
 
 import {
   fetchSessions,
@@ -178,7 +178,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {!hideNav ? (
         <aside className="sticky top-0 hidden h-screen flex-col border-r border-border bg-panel px-4 py-6 lg:flex">
           <Link to="/today" className="flex items-center gap-3 px-2">
-            <img src={appLogo.url} alt="Bnoy Study" width={1024} height={1024} className="size-11 rounded-2xl object-contain" />
+            <img src={appLogo} alt="Bnoy Study" width={1024} height={1024} className="size-11 rounded-2xl object-contain" />
             <span><span className="font-heading block text-lg font-extrabold">Bnoy Study</span><span className="text-xs text-muted-foreground">Study OS</span></span>
           </Link>
           <nav aria-label="Primary" className="mt-10 grid gap-2">
@@ -205,7 +205,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
         <Link to="/today" className="flex min-w-0 items-center gap-3 lg:hidden">
           <img
-            src={appLogo.url}
+            src={appLogo}
              alt="Bnoy Study"
             width={1024}
             height={1024}
