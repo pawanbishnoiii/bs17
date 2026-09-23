@@ -10,7 +10,7 @@ export function AdminBrandingPanel() {
   const settings = useQuery({ queryKey: ["app-settings"], queryFn: fetchAppSettings });
 
   const save = useMutation({
-    mutationFn: (patch: { logo_url?: string; favicon_url?: string }) => updateAppSettings(patch),
+    mutationFn: (patch: Record<string, string | number | null>) => updateAppSettings(patch),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["app-settings"] });
       toast.success("Branding updated");
@@ -41,7 +41,25 @@ export function AdminBrandingPanel() {
           url={settings.data?.favicon_url ?? null}
           onPick={(favicon_url) => save.mutate({ favicon_url })}
         />
+        <BrandSlot
+          label="Phone background"
+          folder="banners"
+          url={settings.data?.bg_mobile_url ?? null}
+          onPick={(bg_mobile_url) => save.mutate({ bg_mobile_url })}
+        />
+        <BrandSlot
+          label="Desktop background"
+          folder="banners"
+          url={settings.data?.bg_desktop_url ?? null}
+          onPick={(bg_desktop_url) => save.mutate({ bg_desktop_url })}
+        />
       </div>
+      {settings.data ? (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <RangeSlot label="Background blur" suffix="px" max={24} value={settings.data.bg_blur ?? 0} onCommit={(bg_blur) => save.mutate({ bg_blur })} />
+          <RangeSlot label="Overlay" suffix="%" max={90} value={settings.data.bg_overlay ?? 0} onCommit={(bg_overlay) => save.mutate({ bg_overlay })} />
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -53,7 +71,7 @@ function BrandSlot({
   onPick,
 }: {
   label: string;
-  folder: "logo" | "favicon";
+  folder: "logo" | "favicon" | "banners";
   url: string | null;
   onPick: (url: string) => void;
 }) {
@@ -118,3 +136,13 @@ function BrandSlot({
   );
 }
 
+
+function RangeSlot({ label, suffix, max, value, onCommit }: { label: string; suffix: string; max: number; value: number; onCommit: (v: number) => void }) {
+  const [v, setV] = useState(value);
+  return (
+    <label className="card-raised grid gap-2 p-3 text-xs font-semibold">
+      <span className="flex justify-between"><span>{label}</span><span>{v}{suffix}</span></span>
+      <input type="range" min={0} max={max} value={v} onChange={(e) => setV(Number(e.target.value))} onPointerUp={() => onCommit(v)} onKeyUp={() => onCommit(v)} className="accent-[var(--primary)]" />
+    </label>
+  );
+}

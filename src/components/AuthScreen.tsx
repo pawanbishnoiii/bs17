@@ -186,7 +186,7 @@ export function AuthScreen() {
     "h-13 w-full rounded-2xl bg-secondary px-4 text-[15px] font-medium text-foreground placeholder:text-muted-foreground outline-none ring-1 ring-transparent transition focus:ring-2 focus:ring-ring";
 
   return (
-    <div className="relative flex min-h-[100svh] flex-col overflow-hidden bg-blue-soft dark:bg-background md:grid md:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)]">
+    <div className="relative flex min-h-[100svh] flex-col overflow-hidden bg-gradient-to-br from-blue-soft/70 via-lavender-soft/50 to-peach/40 dark:bg-background/60 md:grid md:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)]">
       <GoogleOneTap />
 
       <header className="relative z-10 flex items-center justify-between px-5 pt-[calc(1rem+env(safe-area-inset-top))] md:absolute md:inset-x-0 md:top-0 md:px-10">

@@ -8,6 +8,10 @@ import {
   FileText,
   FolderPlus,
   Home,
+  LayoutGrid,
+  List as ListIcon,
+  CheckSquare,
+  Square,
   Link2,
   Music,
   Pencil,
@@ -64,6 +68,23 @@ export function ClassLibrary() {
   const [folderName, setFolderName] = useState("");
   const [linkOpen, setLinkOpen] = useState(false);
   const [link, setLink] = useState({ url: "", title: "" });
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [view, setView] = useState<"grid" | "list">("grid");
+  useEffect(() => {
+    const v = localStorage.getItem("library-view");
+    if (v === "list" || v === "grid") setView(v);
+  }, []);
+  const changeView = (v: "grid" | "list") => {
+    setView(v);
+    localStorage.setItem("library-view", v);
+  };
+  const toggleSel = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const folders = useQuery({
     queryKey: ["library-folders"],
@@ -74,6 +95,7 @@ export function ClassLibrary() {
   });
   const media = useQuery({ queryKey: ["library-media"], queryFn: fetchMedia });
 
+  useEffect(() => setSelected(new Set()), [path]);
   const current = path.length ? path[path.length - 1]! : null;
   const currentId = current?.id ?? null;
 
@@ -225,6 +247,10 @@ export function ClassLibrary() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <div className="flex rounded-full border border-border p-0.5">
+            <button type="button" aria-label="Grid view" onClick={() => changeView("grid")} className={`grid size-9 place-items-center rounded-full ${view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}><LayoutGrid className="size-4" /></button>
+            <button type="button" aria-label="List view" onClick={() => changeView("list")} className={`grid size-9 place-items-center rounded-full ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}><ListIcon className="size-4" /></button>
+          </div>
           <Button variant="outline" className="gap-2" disabled={sync.isPending} onClick={() => sync.mutate()}>
             <RefreshCw className={`size-4 ${sync.isPending ? "animate-spin" : ""}`} /> Sync folders
           </Button>
@@ -324,13 +350,26 @@ export function ClassLibrary() {
           ) : null}
 
           {files.length ? (
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div className={`mt-6 ${view === "grid" ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" : "grid gap-2"}`}>
+              {files.length > 1 ? (
+                <button type="button" onClick={() => setSelected(selected.size === files.length ? new Set() : new Set(files.map((f) => f.id)))} className={`${view === "grid" ? "col-span-full" : ""} flex w-fit items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground`}>
+                  {selected.size === files.length ? <CheckSquare className="size-4" /> : <Square className="size-4" />} Select all
+                </button>
+              ) : null}
               {files.map((item) => (
-                <article key={item.id} className="overflow-hidden rounded-2xl border border-border bg-panel">
+                <article key={item.id} className={`relative overflow-hidden rounded-2xl border bg-panel ${selected.has(item.id) ? "border-primary ring-2 ring-primary/40" : "border-border"} ${view === "list" ? "grid grid-cols-[auto_minmax(0,1fr)] items-center" : ""}`}>
                   <button
                     type="button"
-                    onClick={() => setViewing(item)}
-                    className="grid h-28 w-full place-items-center bg-secondary text-muted-foreground"
+                    aria-label={`Select ${item.title}`}
+                    onClick={() => toggleSel(item.id)}
+                    className="absolute top-2 left-2 z-10 grid size-7 place-items-center rounded-lg bg-background/90 text-primary shadow"
+                  >
+                    {selected.has(item.id) ? <CheckSquare className="size-4" /> : <Square className="size-4 text-muted-foreground" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => (selected.size ? toggleSel(item.id) : setViewing(item))}
+                    className={`grid place-items-center bg-secondary text-muted-foreground ${view === "grid" ? "h-28 w-full" : "size-16"}`}
                   >
                     {item.thumbnail_url ? (
                       <img src={item.thumbnail_url} alt="" className="size-full object-cover" />
@@ -489,6 +528,24 @@ export function ClassLibrary() {
               )}
             </div>
           </div>
+        </div>
+      ) : null}
+      {selected.size ? (
+        <div className="fixed inset-x-3 bottom-24 z-40 mx-auto flex max-w-xl items-center gap-2 rounded-full border border-border bg-panel/95 p-2 pl-4 shadow-2xl backdrop-blur lg:bottom-6">
+          <span className="num flex-1 text-sm font-bold">{selected.size} selected</span>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => {
+            for (const m of files.filter((f) => selected.has(f.id))) void downloadMedia(m).catch((e: Error) => toast.error(e.message));
+          }}><Download className="size-4" /> Download</Button>
+          <Button size="sm" variant="destructive" className="gap-1.5" onClick={async () => {
+            if (!window.confirm(`${selected.size} files delete karein?`)) return;
+            const list = files.filter((f) => selected.has(f.id));
+            const results = await Promise.allSettled(list.map((m) => deleteMedia(m)));
+            const failed = results.filter((r) => r.status === "rejected").length;
+            setSelected(new Set());
+            refresh();
+            if (failed) toast.error(`${failed} files delete nahi hui`); else toast.success("Files hata di");
+          }}><Trash2 className="size-4" /> Delete</Button>
+          <button type="button" aria-label="Clear selection" onClick={() => setSelected(new Set())} className="grid size-9 place-items-center rounded-full text-muted-foreground hover:text-foreground"><X className="size-4" /></button>
         </div>
       ) : null}
     </section>

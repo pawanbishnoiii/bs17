@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { AppBackground } from "@/components/AppBackground";
 import { ThemeProvider } from "@/lib/theme";
 import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 import { DynamicBranding } from "@/components/DynamicBranding";
@@ -166,6 +167,7 @@ function RootComponent() {
         {/* Page-level transitions live inside AppShell so the fixed bottom dock never unmounts. */}
         <SessionKeeper />
         <DynamicBranding />
+        <AppBackground />
         <Outlet />
         <Toaster position="top-center" richColors />
       </ThemeProvider>

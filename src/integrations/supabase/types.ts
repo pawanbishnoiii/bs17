@@ -82,6 +82,10 @@ export type Database = {
           announcement_level: string | null
           avatar_upload_enabled: boolean | null
           banner_text: string | null
+          bg_blur: number
+          bg_desktop_url: string | null
+          bg_mobile_url: string | null
+          bg_overlay: number
           default_daily_goal_hours: number | null
           default_weekly_goal_hours: number | null
           email_auth_enabled: boolean | null
@@ -114,6 +118,10 @@ export type Database = {
           announcement_level?: string | null
           avatar_upload_enabled?: boolean | null
           banner_text?: string | null
+          bg_blur?: number
+          bg_desktop_url?: string | null
+          bg_mobile_url?: string | null
+          bg_overlay?: number
           default_daily_goal_hours?: number | null
           default_weekly_goal_hours?: number | null
           email_auth_enabled?: boolean | null
@@ -146,6 +154,10 @@ export type Database = {
           announcement_level?: string | null
           avatar_upload_enabled?: boolean | null
           banner_text?: string | null
+          bg_blur?: number
+          bg_desktop_url?: string | null
+          bg_mobile_url?: string | null
+          bg_overlay?: number
           default_daily_goal_hours?: number | null
           default_weekly_goal_hours?: number | null
           email_auth_enabled?: boolean | null
