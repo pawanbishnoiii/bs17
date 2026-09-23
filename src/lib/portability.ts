@@ -116,16 +116,22 @@ export async function buildExportZip(
   };
 
   if (mode === "full" && keep("profile")) {
+    onProgress?.("Profile", 6);
     const profile = await readAll("profiles");
     manifest["profile"] = profile[0] ?? null;
   }
 
+  onProgress?.("Subjects", 12);
   const subjects = keep("subjects") ? await readAll("subjects") : [];
+  onProgress?.("Chapters", 18);
   const chapters = keep("chapters") ? await readAll("chapters") : [];
+  onProgress?.("Topics & types", 24);
   const subtopics = keep("chapter_subtopics") ? await readAll("chapter_subtopics") : [];
+  onProgress?.("Study history", 32);
   const sessions = keep("study_sessions") ? await readAll("study_sessions") : [];
   const breaks = keep("session_breaks") ? await readAll("session_breaks") : [];
   const outcomes = keep("session_outcomes") ? await readAll("session_outcomes") : [];
+  onProgress?.("Streaks", 40);
   const streaks = keep("streak_days") ? await readSafe("streak_days") : [];
   const notes = keep("chapter_notes") ? ((await readAll("chapter_notes")) as unknown as ChapterNote[]) : [];
 
@@ -138,6 +144,7 @@ export async function buildExportZip(
   manifest["streak_days"] = streaks;
   manifest["chapter_notes"] = notes;
 
+  onProgress?.("Targets, plan & classes", 48);
   for (const table of SIMPLE_TABLES) {
     if (mode === "study" && ["user_settings", "reading_goals", "user_xp"].includes(table)) continue;
     manifest[table] = keep(table) ? await readAll(table) : [];
@@ -145,6 +152,7 @@ export async function buildExportZip(
 
   const zip = new JSZip();
   const folder = zip.folder("media");
+  let done = 0;
   for (const note of notes) {
     try {
       const blob = await downloadNoteBlob(note.storage_path);
@@ -153,11 +161,17 @@ export async function buildExportZip(
     } catch {
       // A missing file should not break the whole export.
     }
+    done += 1;
+    onProgress?.(`Files ${done}/${notes.length}`, 55 + Math.round((done / Math.max(notes.length, 1)) * 30));
   }
   zip.file("data.json", JSON.stringify(manifest, null, 2));
 
-  const blob = await zip.generateAsync({ type: "blob" });
+  const blob = await zip.generateAsync({ type: "blob" }, (meta) =>
+    onProgress?.("Packing file", 88 + Math.round((meta.percent / 100) * 11)),
+  );
+  onProgress?.("Done", 100);
   return {
+
     blob,
     summary: {
       subjects: subjects.length,
