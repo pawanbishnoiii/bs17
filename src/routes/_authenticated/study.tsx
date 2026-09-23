@@ -3,18 +3,28 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Check, Clock3, History, Search, Settings2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Clock3, History, Pencil, Search, Settings2, X } from "lucide-react";
 import {
+  addChapters,
+  addChapterSubtopics,
   currentBlock,
   fetchBlocks,
+  fetchChapters,
+  fetchChapterSubtopics,
   fetchRunningSession,
   fetchSessions,
   fetchSubjects,
   fmtHM,
   localTimeToIsoToday,
   relativeTime,
+  renameChapter,
+  renameChapterSubtopic,
+  renumberChapter,
+  renumberChapterSubtopic,
   startSession,
   startOfToday,
+  type ChapterRow,
+  type ChapterSubtopicRow,
 } from "@/lib/study";
 import { SubjectsManager } from "@/components/SubjectsManager";
 import { ActivityArtwork, PageHeader, ResponsiveSheet, type ActivityKind } from "@/components/study-ui";
@@ -89,6 +99,15 @@ function StudySetupPage() {
   });
   const [subjectSheet, setSubjectSheet] = useState(false);
   const [subjectSearch, setSubjectSearch] = useState("");
+  const [chapterId, setChapterId] = useState("");
+  const [subtopicId, setSubtopicId] = useState("");
+  const [chapterSheet, setChapterSheet] = useState(false);
+  const [chapterDraft, setChapterDraft] = useState("");
+  const [typeSheet, setTypeSheet] = useState(false);
+  const [typeChapterId, setTypeChapterId] = useState("");
+  const [typeDraft, setTypeDraft] = useState("");
+  const [editChapter, setEditChapter] = useState<{ id: string; name: string; position: number } | null>(null);
+  const [editSubtopic, setEditSubtopic] = useState<{ id: string; name: string; position: number } | null>(null);
 
   const running = useQuery({ queryKey: ["running"], queryFn: fetchRunningSession });
   const subjects = useQuery({ queryKey: ["subjects"], queryFn: fetchSubjects });
@@ -103,8 +122,21 @@ function StudySetupPage() {
   const pace = useQuery({ queryKey: ["chapter-pace"], queryFn: fetchChapterPace });
   const activeSubject = (subjects.data ?? []).find((s) => s.id === form.subject_id);
 
+  const chapters = useQuery({
+    queryKey: ["chapters", form.subject_id],
+    queryFn: () => fetchChapters(form.subject_id),
+    enabled: !!form.subject_id,
+  });
+  const subtopics = useQuery({
+    queryKey: ["chapter_subtopics", chapterId],
+    queryFn: () => fetchChapterSubtopics(chapterId),
+    enabled: !!chapterId,
+  });
+  const hasSubtopics = (subtopics.data ?? []).length > 0;
+  const selectedSubtopic = (subtopics.data ?? []).find((s) => s.id === subtopicId);
+
   const subjectChosen = !!(form.subject_id || form.subject_name.trim());
-  const focusChosen = !!(form.chapter.trim() || form.topic.trim());
+  const focusChosen = !!chapterId && (subtopics.isLoading ? false : !hasSubtopics || !!subtopicId);
 
   // The timer lives on its own page — a live session always belongs there.
   useEffect(() => {
@@ -151,14 +183,62 @@ function StudySetupPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.plan, plan.data]);
 
+  const addChaptersMutation = useMutation({
+    mutationFn: (names: string[]) => addChapters(form.subject_id, names),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["chapters", form.subject_id] });
+      setChapterSheet(false);
+      setChapterDraft("");
+      toast.success("Chapter(s) added");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const addTypesMutation = useMutation({
+    mutationFn: ({ chapterId: cid, names }: { chapterId: string; names: string[] }) => addChapterSubtopics(cid, names),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ["chapter_subtopics", vars.chapterId] });
+      setTypeSheet(false);
+      setTypeChapterId("");
+      setTypeDraft("");
+      toast.success("Type(s) added");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveChapterMutation = useMutation({
+    mutationFn: async (input: { id: string; name: string; position: number }) => {
+      await renameChapter(input.id, input.name);
+      await renumberChapter(input.id, input.position);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["chapters", form.subject_id] });
+      setEditChapter(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveSubtopicMutation = useMutation({
+    mutationFn: async (input: { id: string; name: string; position: number }) => {
+      await renameChapterSubtopic(input.id, input.name);
+      await renumberChapterSubtopic(input.id, input.position);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["chapter_subtopics", chapterId] });
+      setEditSubtopic(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const start = useMutation({
     mutationFn: async () => {
       const subj = (subjects.data ?? []).find((s) => s.id === form.subject_id);
       const plannedEnd = form.planned_end_at ? localTimeToIsoToday(form.planned_end_at) : null;
+      const fallbackTopic = selectedSubtopic ? `${selectedSubtopic.position}. ${selectedSubtopic.name}` : null;
       return startSession({
         subject_id: subj?.id ?? null,
         subject_name: subj?.name ?? (form.subject_name.trim() || "Study"),
-        topic: form.topic.trim() || null,
+        topic: form.topic.trim() || fallbackTopic,
         chapter: form.chapter.trim() || null,
         kind: form.kind,
         planned_end_at: plannedEnd,
@@ -275,7 +355,7 @@ function StudySetupPage() {
                           <span className="block truncate text-sm font-extrabold">{activeSubject?.name ?? form.subject_name}</span>
                           <span className="text-xs text-muted-foreground">Selected subject</span>
                         </span>
-                        <Button variant="outline" size="sm" onClick={() => setForm({ ...form, subject_id: "", subject_name: "", chapter: "", topic: "" })}>Change</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setForm({ ...form, subject_id: "", subject_name: "", chapter: "", topic: "" }); setChapterId(""); setSubtopicId(""); }}>Change</Button>
                       </div>
                     ) : <><label className="relative mt-4 block">
                       <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -307,7 +387,7 @@ function StudySetupPage() {
                             key={x.id}
                             type="button"
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => { hapticSelect(); setForm({ ...form, subject_id: x.id, subject_name: x.name, chapter: "" }); }}
+                            onClick={() => { hapticSelect(); setForm({ ...form, subject_id: x.id, subject_name: x.name, chapter: "" }); setChapterId(""); setSubtopicId(""); }}
                             aria-pressed={on}
                             className={`flex min-h-24 items-center gap-3 rounded-[22px] border-2 p-4 text-left transition ${
                               on
@@ -588,6 +668,8 @@ function StudySetupPage() {
           selectedId={form.subject_id}
           onSelect={(s) => {
             setForm((f) => ({ ...f, subject_id: s.id, subject_name: s.name, chapter: "" }));
+            setChapterId("");
+            setSubtopicId("");
             setSubjectSheet(false);
             setStep(2);
           }}

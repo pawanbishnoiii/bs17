@@ -10,10 +10,13 @@ import {
   deleteTarget,
   fetchSessions,
   fetchSettings,
+  fetchTargetMode,
+  updateTargetMode,
   fmtHM,
   minutesInRange,
   startOfWeek,
   targetProgress,
+  type TargetMode,
 } from "@/lib/study";
 import { ProgressRing } from "@/components/motion/gsap-bits";
 import { SubjectsManager } from "@/components/SubjectsManager";
@@ -54,6 +57,18 @@ function TargetsPage() {
   const sessions = useQuery({ queryKey: ["sessions", "8w"], queryFn: () => fetchSessions(EIGHT_WEEKS) });
   const settings = useQuery({ queryKey: ["settings"], queryFn: fetchSettings });
   const subjectTargets = useQuery({ queryKey: ["subject-targets"], queryFn: fetchSubjectTargets });
+  const targetMode = useQuery({ queryKey: ["target-mode"], queryFn: fetchTargetMode });
+
+  const modeM = useMutation({
+    mutationFn: updateTargetMode,
+    onSuccess: (_data, mode) => {
+      qc.setQueryData(["target-mode"], mode);
+      toast.success(`Switched to ${mode} targets.`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const mode: TargetMode = targetMode.data ?? "weekly";
 
   const weeklyGoal = settings.data?.weekly_goal_hours ?? 26;
   const weekMin = minutesInRange(sessions.data ?? [], startOfWeek());
@@ -87,6 +102,30 @@ function TargetsPage() {
   return (
     <div className="app-page">
       <PageHeader eyebrow="Goals" title="Targets that stay realistic" description="Compare planned study time with real sessions and keep your syllabus visible." action={<Button onClick={() => setOpen(true)}>New target</Button>} />
+
+      <section className="surface-card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div>
+          <p className="section-label">Planning period</p>
+          <h2 className="mt-1 text-lg font-bold">Plan {mode === "weekly" ? "week by week" : "month by month"}</h2>
+        </div>
+        <div className="inline-flex rounded-full bg-secondary p-1">
+          {(["weekly", "monthly"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={mode === m}
+              onClick={() => mode !== m && modeM.mutate(m)}
+              className={`h-10 rounded-full px-5 text-sm font-semibold capitalize transition-colors ${
+                mode === m ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <SubjectPlanSection subjects={subjects.data ?? []} subjectTargets={subjectTargets.data ?? []} mode={mode} />
 
         <section className="mt-6 grid gap-4 rounded-[32px] bg-lavender-soft p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-7">
           <ProgressRing
@@ -301,5 +340,78 @@ function AddTargetForm({
             </button>
           </div>
     </div>
+  );
+}
+
+const PERIOD_FACTOR = 4.3;
+
+/** Convert a weekly count/minutes figure to the other period, and back. */
+function convertPeriod(weeklyValue: number, mode: TargetMode) {
+  return mode === "monthly" ? weeklyValue * PERIOD_FACTOR : weeklyValue;
+}
+
+/**
+ * Per-subject plan for the selected period: target minutes, syllabus size and
+ * an even day-by-day / week-by-week distribution suggestion.
+ */
+function SubjectPlanSection({
+  subjects,
+  subjectTargets,
+  mode,
+}: {
+  subjects: import("@/lib/study").Subject[];
+  subjectTargets: import("@/lib/plan").SubjectTarget[];
+  mode: TargetMode;
+}) {
+  const periodDays = mode === "weekly" ? 7 : 30;
+  const periodLabel = mode === "weekly" ? "week" : "month";
+
+  return (
+    <section className="surface-card mt-6 p-5 sm:p-6">
+      <p className="section-label">Per-subject plan</p>
+      <h2 className="mt-1 text-xl font-bold">This {periodLabel}, at a glance</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Target minutes and an even pace to clear every chapter without cramming.
+      </p>
+
+      {subjects.length === 0 ? (
+        <p className="mt-5 text-sm text-muted-foreground">Add a subject to see its plan here.</p>
+      ) : (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {subjects.map((subject) => {
+            const t = subjectTargets.find((row) => row.subject_id === subject.id);
+            const weeklyMinutes = t?.weekly_minutes ?? Math.round(subject.weekly_target_hours * 60);
+            const periodMinutes = Math.round(convertPeriod(weeklyMinutes, mode));
+            const chapters = subject.chapters?.length ?? 0;
+            const weeklyChapters = t?.weekly_chapters ?? 0;
+            const periodChapters = Math.max(0, Math.round(convertPeriod(weeklyChapters, mode)));
+            const dailyMinutes = periodDays > 0 ? Math.round(periodMinutes / periodDays) : 0;
+            const chapterUnit = mode === "weekly" ? "chapters/week" : "chapters/month";
+
+            return (
+              <article key={subject.id} className="rounded-2xl border border-border bg-secondary/60 p-4">
+                <div className="flex items-center gap-2">
+                  <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: subject.color }} />
+                  <h3 className="truncate font-bold">{subject.name}</h3>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs">
+                  <div className="rounded-xl bg-panel p-2">
+                    <b className="block text-base">{fmtHM(periodMinutes)}</b>
+                    per {periodLabel}
+                  </div>
+                  <div className="rounded-xl bg-panel p-2">
+                    <b className="block text-base">{chapters}</b>
+                    chapters total
+                  </div>
+                </div>
+                <p className="mt-3 rounded-xl bg-dark-card px-3 py-2 text-xs font-medium text-white">
+                  Even pace: {periodChapters || "—"} {chapterUnit} · {dailyMinutes}m/day
+                </p>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }

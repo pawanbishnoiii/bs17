@@ -32,6 +32,7 @@ import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminAndroidRouteImport } from './routes/_authenticated/admin/android'
 import { Route as AuthenticatedAdminBrandingRouteImport } from './routes/_authenticated/admin/branding'
 import { Route as AuthenticatedAdminDataRouteImport } from './routes/_authenticated/admin/data'
+import { Route as AuthenticatedAdminErrorsRouteImport } from './routes/_authenticated/admin/errors'
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin/notifications'
 import { Route as AuthenticatedAdminScheduleRouteImport } from './routes/_authenticated/admin/schedule'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
@@ -155,6 +156,12 @@ const AuthenticatedAdminDataRoute = AuthenticatedAdminDataRouteImport.update({
   path: '/data',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminErrorsRoute =
+  AuthenticatedAdminErrorsRouteImport.update({
+    id: '/errors',
+    path: '/errors',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminNotificationsRoute =
   AuthenticatedAdminNotificationsRouteImport.update({
     id: '/notifications',
@@ -206,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/admin/branding': typeof AuthenticatedAdminBrandingRoute
   '/admin/data': typeof AuthenticatedAdminDataRoute
+  '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
@@ -234,6 +242,7 @@ export interface FileRoutesByTo {
   '/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/admin/branding': typeof AuthenticatedAdminBrandingRoute
   '/admin/data': typeof AuthenticatedAdminDataRoute
+  '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
@@ -265,6 +274,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/_authenticated/admin/branding': typeof AuthenticatedAdminBrandingRoute
   '/_authenticated/admin/data': typeof AuthenticatedAdminDataRoute
+  '/_authenticated/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/_authenticated/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/admin/android'
     | '/admin/branding'
     | '/admin/data'
+    | '/admin/errors'
     | '/admin/notifications'
     | '/admin/schedule'
     | '/admin/settings'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '/admin/android'
     | '/admin/branding'
     | '/admin/data'
+    | '/admin/errors'
     | '/admin/notifications'
     | '/admin/schedule'
     | '/admin/settings'
@@ -354,6 +366,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/android'
     | '/_authenticated/admin/branding'
     | '/_authenticated/admin/data'
+    | '/_authenticated/admin/errors'
     | '/_authenticated/admin/notifications'
     | '/_authenticated/admin/schedule'
     | '/_authenticated/admin/settings'
@@ -535,6 +548,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDataRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/errors': {
+      id: '/_authenticated/admin/errors'
+      path: '/errors'
+      fullPath: '/admin/errors'
+      preLoaderRoute: typeof AuthenticatedAdminErrorsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/notifications': {
       id: '/_authenticated/admin/notifications'
       path: '/notifications'
@@ -578,6 +598,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAndroidRoute: typeof AuthenticatedAdminAndroidRoute
   AuthenticatedAdminBrandingRoute: typeof AuthenticatedAdminBrandingRoute
   AuthenticatedAdminDataRoute: typeof AuthenticatedAdminDataRoute
+  AuthenticatedAdminErrorsRoute: typeof AuthenticatedAdminErrorsRoute
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
   AuthenticatedAdminScheduleRoute: typeof AuthenticatedAdminScheduleRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
@@ -591,6 +612,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAndroidRoute: AuthenticatedAdminAndroidRoute,
     AuthenticatedAdminBrandingRoute: AuthenticatedAdminBrandingRoute,
     AuthenticatedAdminDataRoute: AuthenticatedAdminDataRoute,
+    AuthenticatedAdminErrorsRoute: AuthenticatedAdminErrorsRoute,
     AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
     AuthenticatedAdminScheduleRoute: AuthenticatedAdminScheduleRoute,
     AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,

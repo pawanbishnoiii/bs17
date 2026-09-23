@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { toast } from "sonner";
-import { fetchMyProfile, saveOnboarding, syncIdentityToProfile } from "@/lib/study";
+import { fetchMyProfile, saveOnboarding, syncIdentityToProfile, updateTargetMode, type TargetMode } from "@/lib/study";
 import { AvatarPicker } from "@/components/AvatarPicker";
 import { SubjectsManager } from "@/components/SubjectsManager";
 import { Button } from "@/components/ui/button";
@@ -28,13 +28,14 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   component: OnboardingPage,
 });
 
-const STEPS = ["Your details", "Study rhythm", "Your subjects"] as const;
+const STEPS = ["Your details", "Study rhythm", "Target mode", "Your subjects"] as const;
 
 function OnboardingPage() {
   const navigate = useNavigate();
   const profile = useQuery({ queryKey: ["profile"], queryFn: syncIdentityToProfile });
   const [step, setStep] = useState(0);
   const [touched, setTouched] = useState(false);
+  const [targetMode, setTargetMode] = useState<TargetMode>("weekly");
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -72,6 +73,7 @@ function OnboardingPage() {
   }, [form]);
 
   const stepValid = step === 0 ? Object.values(errors).every((e) => !e) : true;
+  const totalSteps = STEPS.length;
 
   const save = useMutation({
     mutationFn: async () => {
@@ -83,6 +85,7 @@ function OnboardingPage() {
         phone: form.phone.trim(),
         avg_study_hours: Number(form.avg_study_hours) || 0,
       });
+      await updateTargetMode(targetMode);
     },
     onSuccess: async () => {
       await fetchMyProfile();
@@ -99,14 +102,16 @@ function OnboardingPage() {
           <div className="flex items-start justify-between gap-6">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-muted-foreground">
-                Step {step + 1} of 3 · {STEPS[step]}
+                Step {step + 1} of {totalSteps} · {STEPS[step]}
               </p>
               <h1 className="mt-2 text-[clamp(1.75rem,4.5vw,2.5rem)] leading-[1.1] font-extrabold">
                 {step === 0
                   ? "Let’s set up your profile"
                   : step === 1
                     ? "How much can you study?"
-                    : "Add the subjects you study"}
+                    : step === 2
+                      ? "Plan by week or month?"
+                      : "Add the subjects you study"}
               </h1>
             </div>
             <ActivityArtwork
@@ -212,6 +217,44 @@ function OnboardingPage() {
                 <AvatarPicker avatarUrl={profile.data?.avatar_url} displayName={profile.data?.display_name} />
               </Field>
             </div>
+          ) : step === 2 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(
+                [
+                  {
+                    value: "weekly" as const,
+                    title: "Weekly targets",
+                    desc: "Plan your syllabus and study minutes week by week — great for fast-moving revision.",
+                  },
+                  {
+                    value: "monthly" as const,
+                    title: "Monthly targets",
+                    desc: "Plan across a full month — better if you prefer longer, steadier milestones.",
+                  },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  aria-pressed={targetMode === opt.value}
+                  onClick={() => setTargetMode(opt.value)}
+                  className={`rounded-2xl border p-5 text-left transition-colors ${
+                    targetMode === opt.value
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-secondary text-foreground hover:bg-accent"
+                  }`}
+                >
+                  <span className="text-lg font-bold">{opt.title}</span>
+                  <p
+                    className={`mt-2 text-sm ${
+                      targetMode === opt.value ? "text-background/80" : "text-muted-foreground"
+                    }`}
+                  >
+                    {opt.desc}
+                  </p>
+                </button>
+              ))}
+            </div>
           ) : (
             <SubjectsManager
               title="Your subjects"
@@ -229,7 +272,7 @@ function OnboardingPage() {
           >
             <ArrowLeft /> Back
           </Button>
-          {step < 2 ? (
+          {step < totalSteps - 1 ? (
             <Button
               className="min-h-12 rounded-full px-7"
               onClick={() => {
