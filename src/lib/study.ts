@@ -78,6 +78,7 @@ export type Settings = {
   timer_show_details: boolean;
   timer_sounds_haptics: boolean;
   timer_keep_awake: boolean;
+  target_mode: "weekly" | "monthly";
 };
 
 export const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -439,6 +440,19 @@ export async function saveSettings(patch: Partial<Settings>) {
     .update({ ...(patch as Record<string, any>), updated_at: new Date().toISOString() })
     .eq("user_id", user_id);
   if (error) throw error;
+}
+
+export type TargetMode = "weekly" | "monthly";
+
+/** Whether the student plans around weekly or monthly targets. */
+export async function fetchTargetMode(): Promise<TargetMode> {
+  const settings = await fetchSettings();
+  const mode = (settings as unknown as { target_mode?: TargetMode }).target_mode;
+  return mode === "monthly" ? "monthly" : "weekly";
+}
+
+export async function updateTargetMode(mode: TargetMode) {
+  await saveSettings({ target_mode: mode } as Partial<Settings>);
 }
 
 export async function fetchProfile() {
