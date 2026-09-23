@@ -75,7 +75,7 @@ async function smtpTransport(cfg: EmailConfigRow) {
     port: cfg.smtp_port!,
     secure: cfg.encryption === "ssl" || cfg.encryption === "tls" || cfg.smtp_port === 465,
     requireTLS: cfg.encryption === "starttls",
-    auth: { user: cfg.smtp_user!, pass: cfg.smtp_password! },
+    auth: (cfg as { smtp_auth?: boolean }).smtp_auth === false ? undefined : { user: cfg.smtp_user!, pass: cfg.smtp_password! },
     tls: { rejectUnauthorized: cfg.verify_ssl !== false },
     connectionTimeout: timeout,
     greetingTimeout: timeout,

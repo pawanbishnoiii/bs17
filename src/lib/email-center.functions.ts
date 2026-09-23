@@ -38,8 +38,7 @@ export const getEmailConfig = createServerFn({ method: "GET" })
     const db = await admin(context);
     const { data, error } = await db.from("email_settings").select("*").eq("id", true).maybeSingle();
     if (error) throw new Error(error.message);
-    if (!data) return null;
-    const row = data as Record<string, any>;
+    const row = (data ?? {}) as Record<string, any>;
     return {
       provider: row["provider"] ?? "lovable",
       adapter: row["adapter"] ?? "smtp",
@@ -52,6 +51,7 @@ export const getEmailConfig = createServerFn({ method: "GET" })
       reply_to: row["reply_to"] ?? null,
       timeout_seconds: row["timeout_seconds"] ?? 20,
       verify_ssl: row["verify_ssl"] ?? true,
+      smtp_auth: row["smtp_auth"] ?? true,
       has_password: Boolean(row["smtp_password"]),
       has_api_key: Boolean(row["api_key"]),
       last_verified_at: row["last_verified_at"] ?? null,
@@ -71,7 +71,8 @@ export const saveEmailConfig = createServerFn({ method: "POST" })
         smtp_user: z.string().max(300).nullable().optional(),
         smtp_password: z.string().max(400).optional(),
         api_key: z.string().max(400).optional(),
-        encryption: z.enum(["starttls", "ssl", "none"]).optional(),
+        encryption: z.enum(["starttls", "ssl", "tls", "none"]).optional(),
+        smtp_auth: z.boolean().optional(),
         from_email: z.string().max(300).nullable().optional(),
         from_name: z.string().max(200).nullable().optional(),
         reply_to: z.string().max(300).nullable().optional(),
@@ -88,7 +89,8 @@ export const saveEmailConfig = createServerFn({ method: "POST" })
       if ((key === "smtp_password" || key === "api_key") && !value) continue;
       patch[key] = value;
     }
-    const { error } = await db.from("email_settings").update(patch as never).eq("id", true);
+    if (patch["encryption"] === "tls") patch["encryption"] = "ssl";
+    const { error } = await db.from("email_settings").upsert({ id: true, ...patch } as never, { onConflict: "id" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
