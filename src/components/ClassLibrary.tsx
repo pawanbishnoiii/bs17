@@ -151,7 +151,7 @@ export function ClassLibrary() {
   });
 
   const rename = useMutation({
-    mutationFn: (v: { item: LibraryMedia; title: string }) => renameMedia(v.item, v.title),
+    mutationFn: (v: { item: LibraryMedia; title: string }) => renameMedia(v.item.id, v.title),
     onSuccess: () => {
       refresh();
       toast.success("Naam badal diya");
