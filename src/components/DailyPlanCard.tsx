@@ -108,7 +108,9 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
     .sort((a, b) => (a.next_review_at! < b.next_review_at! ? -1 : 1))
     .slice(0, 5);
 
+  const all = plan.data ?? [];
   const ranked = visiblePlanItems(all);
+
   const items = showAll ? ranked : ranked.slice(0, TOP_TASKS_COUNT);
   const hidden = ranked.length - items.length;
   const rows = items.map((item) => {
