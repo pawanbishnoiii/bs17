@@ -20,23 +20,31 @@ export function DataTransferCard() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [pct, setPct] = useState(0);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [mode, setMode] = useState<TransferMode>("full");
   const [exportPick, setExportPick] = useState<Selection>(allSections());
   const [importPick, setImportPick] = useState<Selection>(allSections());
 
+  const step = (label: string, percent: number) => {
+    setBusy(label);
+    setPct(percent);
+  };
+
   const exportAll = async () => {
-    setBusy("Export ban raha hai…");
+    step("Export ban raha hai…", 2);
     try {
-      const { blob, summary } = await buildExportZip(mode, exportPick);
+      const { blob, summary } = await buildExportZip(mode, exportPick, step);
       saveBlob(`bnoy-study-${mode}-${new Date().toISOString().slice(0, 10)}.zip`, blob);
       toast.success(`Export ready — ${summary.subjects} subjects, ${summary.sessions} sessions, ${summary.notes} files`);
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
       setBusy(null);
+      setPct(0);
     }
   };
+
 
   const pick = async (file: File) => {
     setBusy("File padhi ja rahi hai…");
