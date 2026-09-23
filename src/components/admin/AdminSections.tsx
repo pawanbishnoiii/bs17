@@ -19,6 +19,9 @@ import {
   type AppSettings,
 } from "@/lib/study";
 import { downloadJson, exportUserData, importUserData } from "@/lib/admin-export";
+import { sendTestEmail, verifySmtp } from "@/lib/admin.functions";
+
+type SmtpResult = { ok: boolean; code: string; message: string; detail: string };
 import { AdminUserDrawer } from "@/components/admin/AdminUserDrawer";
 
 export function Sheet({
@@ -416,6 +419,9 @@ export function EmailDelivery() {
   const [draft, setDraft] = useState<EmailSettings | null>(null);
   const value = draft ?? q.data ?? null;
 
+  const [testTo, setTestTo] = useState("");
+  const [result, setResult] = useState<SmtpResult | null>(null);
+
   const save = useMutation({
     mutationFn: async (patch: EmailSettings) => updateEmailSettings(patch),
     onSuccess: async () => {
@@ -424,6 +430,26 @@ export function EmailDelivery() {
       toast.success("Email settings saved");
     },
     onError: (e: Error) => toast.error(e.message),
+  });
+
+  const check = useMutation({
+    mutationFn: () => verifySmtp(),
+    onSuccess: (r: SmtpResult) => {
+      setResult(r);
+      if (r.ok) toast.success("SMTP connection OK");
+      else toast.error(r.message);
+    },
+    onError: (e: Error) => setResult({ ok: false, code: "ERROR", message: e.message, detail: "" }),
+  });
+
+  const sendTest = useMutation({
+    mutationFn: () => sendTestEmail({ data: { to: testTo.trim() } }),
+    onSuccess: (r: SmtpResult) => {
+      setResult(r);
+      if (r.ok) toast.success("Test mail bhej diya");
+      else toast.error(r.message);
+    },
+    onError: (e: Error) => setResult({ ok: false, code: "ERROR", message: e.message, detail: "" }),
   });
 
   if (q.isLoading) {
