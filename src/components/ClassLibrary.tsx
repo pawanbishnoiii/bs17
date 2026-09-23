@@ -65,7 +65,13 @@ export function ClassLibrary() {
   const [linkOpen, setLinkOpen] = useState(false);
   const [link, setLink] = useState({ url: "", title: "" });
 
-  const folders = useQuery({ queryKey: ["library-folders"], queryFn: fetchFolders });
+  const folders = useQuery({
+    queryKey: ["library-folders"],
+    queryFn: async () => {
+      await syncSystemFolders().catch(() => undefined);
+      return fetchFolders();
+    },
+  });
   const media = useQuery({ queryKey: ["library-media"], queryFn: fetchMedia });
 
   const current = path.length ? path[path.length - 1]! : null;
