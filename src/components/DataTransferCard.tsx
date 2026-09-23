@@ -156,7 +156,21 @@ export function DataTransferCard() {
         />
       </div>
 
-      {busy ? <p className="mt-3 text-xs font-semibold text-muted-foreground">{busy}</p> : null}
+      {busy ? (
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span>{busy}</span>
+            <span className="num">{Math.min(100, Math.max(0, Math.round(pct)))}%</span>
+          </div>
+          <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-secondary">
+            <div
+              className="h-full rounded-full bg-foreground transition-[width] duration-300"
+              style={{ width: `${Math.min(100, Math.max(3, pct))}%` }}
+            />
+          </div>
+        </div>
+      ) : null}
+
 
       {preview ? (
         <div className="mt-4 rounded-2xl border border-border bg-panel p-4">
