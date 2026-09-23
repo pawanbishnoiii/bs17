@@ -57,6 +57,7 @@ import {
   monthlyHistory,
   reorderBlocks,
   subjectProgress,
+  syncIdentityToProfile,
   updateSubject,
   startBreak,
   startOfToday,
@@ -124,6 +125,7 @@ function TodayPage() {
   const targets = useQuery({ queryKey: ["targets"], queryFn: fetchTargets });
   const settings = useQuery({ queryKey: ["settings"], queryFn: fetchSettings });
   const xp = useQuery({ queryKey: ["xp"], queryFn: fetchXp });
+  const profile = useQuery({ queryKey: ["profile"], queryFn: syncIdentityToProfile });
 
   const motivations = useQuery({
     queryKey: ["motivations"],
