@@ -528,13 +528,66 @@ export function EmailDelivery() {
         </div>
       ) : null}
 
-      <button
-        onClick={() => save.mutate(v)}
-        disabled={!draft || save.isPending}
-        className="mt-4 h-11 w-full rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-sm font-semibold text-brand-foreground transition-opacity disabled:opacity-50 sm:w-48"
-      >
-        {save.isPending ? "Saving…" : "Save email settings"}
-      </button>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button
+          onClick={() => save.mutate(v)}
+          disabled={!draft || save.isPending}
+          className="h-11 flex-1 rounded-full bg-gradient-to-r from-[var(--accent-start)] to-[var(--accent-end)] text-sm font-semibold text-brand-foreground transition-opacity disabled:opacity-50 sm:flex-none sm:w-48"
+        >
+          {save.isPending ? "Saving…" : "Save email settings"}
+        </button>
+        {smtp ? (
+          <button
+            onClick={() => check.mutate()}
+            disabled={check.isPending || Boolean(draft)}
+            className="h-11 rounded-full border border-border px-5 text-sm font-semibold disabled:opacity-50"
+          >
+            {check.isPending ? "Checking…" : "Verify connection"}
+          </button>
+        ) : null}
+      </div>
+
+      {smtp ? (
+        <div className="mt-3 rounded-2xl border border-border p-3">
+          <label className="block text-xs text-muted-foreground">Test mail bhejein</label>
+          <div className="mt-1 flex flex-wrap gap-2">
+            <input
+              type="email"
+              value={testTo}
+              onChange={(e) => setTestTo(e.target.value)}
+              placeholder="you@example.com"
+              className="input h-11 min-w-[12rem] flex-1"
+            />
+            <button
+              onClick={() => sendTest.mutate()}
+              disabled={sendTest.isPending || !testTo.includes("@") || Boolean(draft)}
+              className="h-11 rounded-full bg-brand px-5 text-sm font-semibold text-brand-foreground disabled:opacity-50"
+            >
+              {sendTest.isPending ? "Sending…" : "Send test"}
+            </button>
+          </div>
+          {draft ? (
+            <p className="mt-2 text-[11px] text-muted-foreground">Pehle settings save karein, phir test karein.</p>
+          ) : null}
+          {result ? (
+            <div
+              className={`mt-3 rounded-xl border p-3 text-xs ${
+                result.ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"
+              }`}
+            >
+              <p className="font-semibold">
+                {result.ok ? "✓ " : "✕ "}
+                {result.message}
+              </p>
+              {result.detail ? (
+                <p className="mt-1 font-mono break-all text-[10px] text-muted-foreground">
+                  {result.code} · {result.detail}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }
