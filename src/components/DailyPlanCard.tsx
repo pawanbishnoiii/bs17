@@ -315,9 +315,21 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
           <p className="mt-2 text-[11px] font-semibold text-muted-foreground">Loading summary…</p>
         ) : (
           <div className="mt-3 space-y-3">
-            <p className="text-[11px] font-semibold text-muted-foreground">
-              {fmtHM(totals.planned)} planned · {fmtHM(totals.done)} done
-            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {totals.kinds.map((k) => (
+                <span key={k.label} className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-bold capitalize">
+                  {k.label.replace("_", " ")} · {fmtHM(k.minutes)}
+                </span>
+              ))}
+            </div>
+            <ul className="space-y-1.5">
+              {totals.chapters.slice(0, 8).map((c) => (
+                <li key={c.label} className="flex items-center justify-between gap-2 text-[11px] font-semibold">
+                  <span className="truncate">{c.label}</span>
+                  <span className="shrink-0 text-muted-foreground">{fmtHM(c.minutes)}</span>
+                </li>
+              ))}
+            </ul>
             {upcoming.length > 0 ? (
               <ul className="space-y-1.5">
                 {upcoming.map((i) => (
