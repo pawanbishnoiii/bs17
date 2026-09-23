@@ -158,7 +158,8 @@ export function planItemMinutes(item: PlanItem, sessions: Session[], since: Date
       if (item.subject_id && s.subject_id !== item.subject_id) return false;
       const sessionKind = s.kind === "live" ? "class" : s.kind === "test" ? "practice" : s.kind;
       const itemKind = item.session_kind === "live" ? "class" : item.session_kind === "test" ? "practice" : item.session_kind;
-      if (sessionKind !== itemKind) return false;
+      // Any study of the same chapter counts, even if not started from this task.
+      if (!item.chapter_name && sessionKind !== itemKind) return false;
       if (item.chapter_name) {
         const target = norm(item.chapter_name);
         if (norm(s.chapter) !== target && norm(s.topic) !== target) return false;
