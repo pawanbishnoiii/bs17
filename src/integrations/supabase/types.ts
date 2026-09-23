@@ -2234,6 +2234,10 @@ export type Database = {
         Returns: string
       }
       ensure_my_subject_targets: { Args: never; Returns: number }
+      goal_percent_for: {
+        Args: { _kind: string; _minutes: number }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2278,6 +2282,7 @@ export type Database = {
         Args: { _item_id: string; _status: string }
         Returns: number
       }
+      snapshot_streak_day: { Args: { p_day?: string }; Returns: number }
       touch_last_seen: { Args: never; Returns: undefined }
       undo_reading: { Args: { _kind: string }; Returns: undefined }
     }
