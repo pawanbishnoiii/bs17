@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EmailDelivery, SiteSettings } from "@/components/admin/AdminSections";
+import { AdminGoogleAuthPanel } from "@/components/admin/AdminGoogleAuthPanel";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   ssr: false,
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
         <p className="mt-1 text-sm text-muted-foreground">Feature switches, defaults and email delivery.</p>
       </header>
       <SiteSettings />
+      <AdminGoogleAuthPanel />
       <EmailDelivery />
     </div>
   ),

@@ -26,6 +26,7 @@ import { Route as AuthenticatedTimerRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTimetableRouteImport } from './routes/_authenticated/timetable'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as Char126oauthInitiateRouteImport } from './routes/~oauth.initiate'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin/activity'
 import { Route as AuthenticatedAdminAndroidRouteImport } from './routes/_authenticated/admin/android'
@@ -121,6 +122,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => AuthRoute,
 } as any)
+const Char126oauthInitiateRoute = Char126oauthInitiateRouteImport.update({
+  id: '/~oauth/initiate',
+  path: '/~oauth/initiate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -195,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/timetable': typeof AuthenticatedTimetableRoute
   '/today': typeof AuthenticatedTodayRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/~oauth/initiate': typeof Char126oauthInitiateRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/admin/branding': typeof AuthenticatedAdminBrandingRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/timetable': typeof AuthenticatedTimetableRoute
   '/today': typeof AuthenticatedTodayRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/~oauth/initiate': typeof Char126oauthInitiateRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/admin/branding': typeof AuthenticatedAdminBrandingRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/_authenticated/timetable': typeof AuthenticatedTimetableRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/~oauth/initiate': typeof Char126oauthInitiateRoute
   '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/_authenticated/admin/branding': typeof AuthenticatedAdminBrandingRoute
@@ -282,6 +291,7 @@ export interface FileRouteTypes {
     | '/timetable'
     | '/today'
     | '/auth/callback'
+    | '/~oauth/initiate'
     | '/admin/activity'
     | '/admin/android'
     | '/admin/branding'
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
     | '/timetable'
     | '/today'
     | '/auth/callback'
+    | '/~oauth/initiate'
     | '/admin/activity'
     | '/admin/android'
     | '/admin/branding'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/_authenticated/timetable'
     | '/_authenticated/today'
     | '/auth/callback'
+    | '/~oauth/initiate'
     | '/_authenticated/admin/activity'
     | '/_authenticated/admin/android'
     | '/_authenticated/admin/branding'
@@ -356,6 +368,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   WelcomeRoute: typeof WelcomeRoute
+  Char126oauthInitiateRoute: typeof Char126oauthInitiateRoute
   ApiPublicCronRoute: typeof ApiPublicCronRoute
 }
 
@@ -479,6 +492,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/~oauth/initiate': {
+      id: '/~oauth/initiate'
+      path: '/~oauth/initiate'
+      fullPath: '/~oauth/initiate'
+      preLoaderRoute: typeof Char126oauthInitiateRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
@@ -630,6 +650,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   WelcomeRoute: WelcomeRoute,
+  Char126oauthInitiateRoute: Char126oauthInitiateRoute,
   ApiPublicCronRoute: ApiPublicCronRoute,
 }
 export const routeTree = rootRouteImport

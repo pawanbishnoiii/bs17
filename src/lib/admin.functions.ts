@@ -572,3 +572,146 @@ export const adminCancelScheduledEmail = createServerFn({ method: "POST" })
     const { error } = await db.from("scheduled_emails").update({ status: "cancelled" }).eq("id", data.id).eq("status", "pending");
     if (error) throw new Error(error.message);
   });
+
+/* ------------------------------------------------------------------ *
+ * Google OAuth credentials (admin-managed, service-role only table)
+ * ------------------------------------------------------------------ */
+
+export type OAuthSettings = {
+  google_client_id: string | null;
+  has_secret: boolean;
+};
+
+export const getOAuthSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<OAuthSettings> => {
+    const db = (await requireAdmin(context)) as unknown as SupabaseClient;
+    const { data, error } = await db.from("oauth_settings").select("*").eq("id", true).maybeSingle();
+    if (error) throw new Error(error.message);
+    const row = data as { google_client_id: string | null; google_client_secret: string | null } | null;
+    return {
+      google_client_id: row?.google_client_id ?? null,
+      has_secret: Boolean(row?.google_client_secret),
+    };
+  });
+
+export const updateOAuthSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw: unknown) =>
+    z
+      .object({
+        google_client_id: z.string().max(300).nullable().optional(),
+        google_client_secret: z.string().max(300).nullable().optional(),
+      })
+      .parse(raw),
+  )
+  .handler(async ({ data, context }) => {
+    const db = (await requireAdmin(context)) as unknown as SupabaseClient;
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (data.google_client_id !== undefined) patch["google_client_id"] = data.google_client_id?.trim() || null;
+    // An empty secret means "leave the stored one untouched".
+    if (data.google_client_secret) patch["google_client_secret"] = data.google_client_secret.trim();
+    const { error } = await db.from("oauth_settings").update(patch).eq("id", true);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/* ------------------------------------------------------------------ *
+ * SMTP: connection check + test mail
+ * ------------------------------------------------------------------ */
+
+type SmtpConfig = {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  fromEmail: string;
+  fromName: string | null;
+};
+
+async function loadSmtp(db: SupabaseClient): Promise<SmtpConfig> {
+  const { data, error } = await db.from("email_settings").select("*").eq("id", true).maybeSingle();
+  if (error) throw new Error(error.message);
+  const row = data as EmailSettingsRow | null;
+  if (!row) throw new Error("Email settings abhi save nahi hui hain.");
+  if (row.provider !== "smtp") throw new Error("Pehle provider ko Custom SMTP par set karke save karein.");
+  const missing = [
+    !row.smtp_host && "SMTP host",
+    !row.smtp_port && "Port",
+    !row.smtp_user && "Username",
+    !row.smtp_password && "Password",
+    !row.from_email && "From email",
+  ].filter(Boolean) as string[];
+  if (missing.length) throw new Error(`Ye fields missing hain: ${missing.join(", ")}`);
+  return {
+    host: row.smtp_host!,
+    port: row.smtp_port!,
+    user: row.smtp_user!,
+    pass: row.smtp_password!,
+    fromEmail: row.from_email!,
+    fromName: row.from_name,
+  };
+}
+
+async function makeTransport(cfg: SmtpConfig) {
+  const nodemailer = (await import("nodemailer")).default;
+  return nodemailer.createTransport({
+    host: cfg.host,
+    port: cfg.port,
+    secure: cfg.port === 465,
+    auth: { user: cfg.user, pass: cfg.pass },
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 20_000,
+  });
+}
+
+function smtpError(err: unknown) {
+  const e = err as { code?: string; responseCode?: number; response?: string; message?: string };
+  const code = e?.code ?? (e?.responseCode ? String(e.responseCode) : "");
+  const hints: Record<string, string> = {
+    EAUTH: "Username ya password galat hai (Gmail par app password use karein).",
+    ECONNECTION: "Server se connection nahi bana — host aur port check karein.",
+    ETIMEDOUT: "Connection timeout — host/port ya firewall block kar raha hai.",
+    ESOCKET: "TLS/port mismatch — 465 ke liye SSL, 587 ke liye STARTTLS use hota hai.",
+    EDNS: "Host name resolve nahi hua — spelling check karein.",
+    EENVELOPE: "From email reject ho gaya — domain verify karein.",
+  };
+  const detail = e?.response || e?.message || "Unknown SMTP error";
+  return { ok: false as const, code: code || "ERROR", message: hints[code] ?? detail, detail };
+}
+
+export const verifySmtp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const db = (await requireAdmin(context)) as unknown as SupabaseClient;
+    const cfg = await loadSmtp(db);
+    try {
+      const transport = await makeTransport(cfg);
+      await transport.verify();
+      return { ok: true as const, code: "OK", message: `Connected to ${cfg.host}:${cfg.port}`, detail: "" };
+    } catch (err) {
+      return smtpError(err);
+    }
+  });
+
+export const sendTestEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((raw: unknown) => z.object({ to: z.string().email() }).parse(raw))
+  .handler(async ({ data, context }) => {
+    const db = (await requireAdmin(context)) as unknown as SupabaseClient;
+    const cfg = await loadSmtp(db);
+    try {
+      const transport = await makeTransport(cfg);
+      const info = await transport.sendMail({
+        from: cfg.fromName ? `"${cfg.fromName}" <${cfg.fromEmail}>` : cfg.fromEmail,
+        to: data.to,
+        subject: "Bnoy Study — SMTP test mail",
+        text: "Ye ek test mail hai. Agar ye mila, aapki SMTP settings sahi hain.",
+        html: "<p>Ye ek <strong>test mail</strong> hai. Agar ye mila, aapki SMTP settings sahi hain.</p>",
+      });
+      return { ok: true as const, code: "SENT", message: `Sent to ${data.to}`, detail: info.messageId ?? "" };
+    } catch (err) {
+      return smtpError(err);
+    }
+  });

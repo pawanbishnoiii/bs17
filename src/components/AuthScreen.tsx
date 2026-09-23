@@ -95,9 +95,27 @@ export function AuthScreen() {
     return !error;
   }
 
+  /** The Lovable OAuth broker only exists on Lovable-hosted origins. */
+  function brokerAvailable() {
+    const h = window.location.hostname;
+    return (
+      h === "localhost" ||
+      h === "127.0.0.1" ||
+      h.endsWith(".lovable.app") ||
+      h.endsWith(".lovableproject.com") ||
+      h.endsWith(".lovable.dev")
+    );
+  }
+
   async function google() {
     setBusy(true);
     try {
+      if (!brokerAvailable()) {
+        if (await googleDirect()) return;
+        googleBlocked();
+        setBusy(false);
+        return;
+      }
       const result = await lovable.auth
         .signInWithOAuth("google", { redirect_uri: window.location.origin })
         .catch(() => ({ error: true, redirected: false }) as { error: unknown; redirected: boolean });

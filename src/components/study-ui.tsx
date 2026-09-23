@@ -88,18 +88,21 @@ export function SegmentedControl<T extends string>({
 
 export function EmptyState({
   image,
+  icons,
   title,
   description,
   action,
 }: {
   image?: string;
+  icons?: ReactNode;
   title: string;
   description: string;
   action?: ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center px-5 py-9 text-center">
-      {image ? <img src={image} alt="" width={816} height={816} loading="lazy" className="size-32 object-contain" /> : null}
+      {icons ? <div className="mb-1 flex items-center gap-3">{icons}</div> : null}
+      {!icons && image ? <img src={image} alt="" width={816} height={816} loading="lazy" className="size-32 object-contain" /> : null}
       <h3 className="mt-2 text-lg font-bold">{title}</h3>
       <p className="mt-1 max-w-sm text-sm leading-6 text-muted-foreground">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}

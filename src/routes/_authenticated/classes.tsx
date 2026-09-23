@@ -205,7 +205,16 @@ function ClassesPage() {
           <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
         ) : rows.length === 0 ? (
           <EmptyState
-            image={emptyCalendar}
+            icons={
+              <>
+                <span className="grid size-14 place-items-center rounded-2xl bg-[var(--sky-soft,#CBEAFF)]">
+                  <Headphones className="size-7" aria-hidden="true" />
+                </span>
+                <span className="grid size-14 place-items-center rounded-2xl bg-[var(--peach-soft,#FFE0CC)]">
+                  <Laptop className="size-7" aria-hidden="true" />
+                </span>
+              </>
+            }
             title="No classes yet"
             description="Add the classes you have already attended and pick the chapter they covered."
           />
