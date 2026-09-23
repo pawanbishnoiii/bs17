@@ -197,7 +197,8 @@ function TodayPage() {
   }, [all]);
   const today = useMemo(() => dayProgress(todaySessions), [todaySessions]);
 
-  const firstName = (profile.data?.full_name ?? "").trim().split(" ")[0] ?? "";
+  const firstName =
+    (profile.data?.first_name ?? profile.data?.display_name ?? "").trim().split(" ")[0] ?? "";
   const greeting = (() => {
     const h = new Date().getHours();
     if (h < 12) return "Good morning";
