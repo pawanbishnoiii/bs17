@@ -43,7 +43,7 @@ export function WeeklyFocusPicker({ onSaved }: { onSaved?: () => void }) {
       .upsert({ user_id: auth.user.id, week_start: weekKey, subject_ids: ids } as never, {
         onConflict: "user_id,week_start",
       });
-    if (error) return toast.error("Could not save weekly focus");
+    if (error) { toast.error("Could not save weekly focus"); return; }
     qc.invalidateQueries({ queryKey: ["weekly-focus", weekKey] });
     if (weekKey === localDateKey(monday(new Date()))) onSaved?.();
   };

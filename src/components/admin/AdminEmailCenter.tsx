@@ -196,6 +196,7 @@ function SettingsTab() {
               <select className={FIELD} value={row["encryption"] ?? "starttls"} onChange={(e) => set({ encryption: e.target.value })}>
                 <option value="starttls">STARTTLS (587)</option>
                 <option value="ssl">SSL / TLS (465)</option>
+                <option value="tls">TLS (implicit, 465)</option>
                 <option value="none">None</option>
               </select>
             </div>
