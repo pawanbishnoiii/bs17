@@ -3,18 +3,28 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Check, Clock3, History, Search, Settings2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Clock3, History, Pencil, Search, Settings2, X } from "lucide-react";
 import {
+  addChapters,
+  addChapterSubtopics,
   currentBlock,
   fetchBlocks,
+  fetchChapters,
+  fetchChapterSubtopics,
   fetchRunningSession,
   fetchSessions,
   fetchSubjects,
   fmtHM,
   localTimeToIsoToday,
   relativeTime,
+  renameChapter,
+  renameChapterSubtopic,
+  renumberChapter,
+  renumberChapterSubtopic,
   startSession,
   startOfToday,
+  type ChapterRow,
+  type ChapterSubtopicRow,
 } from "@/lib/study";
 import { SubjectsManager } from "@/components/SubjectsManager";
 import { ActivityArtwork, PageHeader, ResponsiveSheet, type ActivityKind } from "@/components/study-ui";
