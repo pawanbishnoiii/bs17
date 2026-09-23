@@ -48,7 +48,7 @@ function ProfilePage() {
     gender: "",
     age: "",
     phone: "",
-    avg_study_hours: "3",
+    avg_study_hours: "8",
   });
   const [dirty, setDirty] = useState(false);
 
@@ -61,7 +61,7 @@ function ProfilePage() {
       gender: p.gender ?? "",
       age: p.age ? String(p.age) : "",
       phone: p.phone ?? "",
-      avg_study_hours: String(p.avg_study_hours ?? 3),
+      avg_study_hours: String(p.avg_study_hours ?? 8),
     });
   }, [profile.data, dirty]);
 
