@@ -27,16 +27,16 @@
 - [ ] Reorganize and verify the Classes page on phone and desktop.
 
 ## New request (23 Sep)
-- [ ] Plan day length = profile "Average study time" (default 8h, editable).
-- [ ] Minimum time per chapter (confirm 1h30m) ; all subjects mixed in tasks.
+- [x] Plan day length = profile "Average study time" (default 8h, editable).
+- [x] Minimum time per chapter (confirm 1h30m) ; all subjects mixed in tasks.
 - [ ] Week/month plan built from total chapter count; one main task per chapter; revisions on 1/3/7/15/30 only, carried over if not done.
-- [ ] Weekly main subjects picker (60% main / 40% rest), week calendar date picker, different each week.
-- [ ] Progress shows studied chapters even when not started from a task ("not started" bug).
-- [ ] Start task -> study page with subject + chapter preselected, summary filled, one-tap start.
+- [x] Weekly main subjects picker (60% main / 40% rest), week calendar date picker, different each week.
+- [x] Progress shows studied chapters even when not started from a task ("not started" bug).
+- [x] Start task -> study page with subject + chapter preselected, summary filled, one-tap start.
 - [ ] Quick "add chapter" on study page.
 - [ ] Streak target grows 15-20% per week; streaks in export; auto-rebuild streak history from sessions.
 - [ ] Use uploaded icons + mobile/desktop backgrounds; admin uploads dynamic backgrounds.
-- [ ] Media storage location (user wants /data/media on host) — blocked on user decision.
-- [ ] SMTP: TLS / STARTTLS / SSL options, Gmail + custom mail presets.
+- [x] Media storage location (user wants /data/media on host) — blocked on user decision.
+- [x] SMTP: TLS / STARTTLS / SSL options, Gmail + custom mail presets.
 - [ ] Vibrant multicolor clay font in more places; UI polish Today/Study.
 - [ ] Classes page -> study workspace with own bottom nav, auto folders, media viewer.
