@@ -92,13 +92,19 @@ export type ExportSummary = {
   counts: Partial<Record<SectionId, number>>;
 };
 
+/** Progress callback shared by export and import: a label plus 0–100 percent. */
+export type ProgressFn = (label: string, percent: number) => void;
+
 /** Build the ZIP and hand it back with a short summary for the UI. */
 export async function buildExportZip(
   mode: TransferMode = "full",
   selection: Selection = allSections(),
+  onProgress?: ProgressFn,
 ): Promise<{ blob: Blob; summary: ExportSummary }> {
   const user = await currentUser();
   const keep = (key: string) => enabled(selection, key);
+  onProgress?.("Starting export", 2);
+
 
   const manifest: Record<string, unknown> = {
     format: "bnoy-study-user-export",
