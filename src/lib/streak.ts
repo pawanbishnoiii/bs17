@@ -75,32 +75,41 @@ export function studyStreak(sessions: Session[], dailyGoalHours: number): Streak
   const todayDone = weightedProgress >= 100;
 
   // Current run — today counts when finished, otherwise start at yesterday.
+  // A missed day burns one of that week's two lifelines: the streak survives
+  // at exactly the same length (the missed day itself never adds a day).
   const cursor = new Date(today);
   if (!todayDone) cursor.setDate(cursor.getDate() - 1);
   let current = 0;
-  let shieldDays = 0;
-  let shieldWeek = "";
-  while (current < 400) {
+  let steps = 0;
+  const usedByWeek = new Map<string, number>();
+  const weekKeyOf = (d: Date) => {
+    const weekStart = new Date(d);
+    weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+    return key(weekStart);
+  };
+  while (steps < 400) {
+    steps += 1;
     const day = key(cursor);
     const done = (progressByDay[day] ?? 0) >= 100;
-    const weekStart = new Date(cursor);
-    weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
-    const weekKey = key(weekStart);
     if (done) {
       current += 1;
-      shieldDays = 0;
       cursor.setDate(cursor.getDate() - 1);
       continue;
     }
-    if (shieldDays < 3 && (!shieldWeek || shieldWeek === weekKey)) {
-      shieldDays += 1;
-      shieldWeek = weekKey;
-      current += 1;
+    const weekKey = weekKeyOf(cursor);
+    const used = usedByWeek.get(weekKey) ?? 0;
+    if (current > 0 && used < WEEKLY_LIFELINES) {
+      usedByWeek.set(weekKey, used + 1);
       cursor.setDate(cursor.getDate() - 1);
       continue;
     }
     break;
   }
+
+  // Lifelines already spent inside the current (Mon–Sun) week.
+  const thisWeekKey = weekKeyOf(today);
+  const lifelinesUsed = usedByWeek.get(thisWeekKey) ?? 0;
+  const lifelinesLeft = Math.max(0, WEEKLY_LIFELINES - lifelinesUsed);
 
   // Personal best across everything we loaded.
   const days = Object.keys(perDay).sort();
