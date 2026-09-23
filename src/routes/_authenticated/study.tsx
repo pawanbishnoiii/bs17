@@ -168,13 +168,22 @@ function StudySetupPage() {
       subject_id: item.subject_id ?? "",
       subject_name: item.subject_name ?? "",
       chapter: item.chapter_name ?? "",
-      topic: item.chapter_name ?? item.subject_name ?? "",
-      kind: item.session_kind,
-      planned_end_at: item.scheduled_end?.slice(0, 5) ?? end.toTimeString().slice(0, 5),
+      topic: "",
+      kind: item.session_kind === "notes_revision" ? "revision" : item.session_kind,
+      planned_end_at: end.toTimeString().slice(0, 5),
     }));
+    setChapterId(item.chapter_id ?? "");
+    setSubtopicId(item.subtopic_id ?? "");
     setStep(3);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Plan rows without a chapter id: select the chapter by name once chapters load.
+  useEffect(() => {
+    if (chapterId || !form.chapter || !chapters.data) return;
+    const hit = chapters.data.find((c) => c.name.trim().toLowerCase() === form.chapter.trim().toLowerCase());
+    if (hit) setChapterId(hit.id);
+  }, [chapters.data, form.chapter, chapterId]);
 
   useEffect(() => {
     if (!search.plan || !plan.data) return;
