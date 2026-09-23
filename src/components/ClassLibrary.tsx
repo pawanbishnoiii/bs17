@@ -3,12 +3,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ChevronRight,
+  Copy,
   Download,
   FileText,
   FolderPlus,
   Home,
   Link2,
   Music,
+  Pencil,
   Play,
   RefreshCw,
   Trash2,
@@ -29,11 +31,13 @@ import {
   fetchMedia,
   humanSize,
   mediaUrl,
+  renameMedia,
   syncSystemFolders,
   uploadMedia,
   type LibraryFolder,
   type LibraryMedia,
 } from "@/lib/class-library";
+
 
 const GRADIENTS = [
   "linear-gradient(135deg,#ffd9c0,#ffb38a)",
