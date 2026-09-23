@@ -277,7 +277,7 @@ async function insertMapped(
 /** Write an uploaded export into the signed-in account. Existing data stays. */
 export async function applyImport(
   preview: ImportPreview,
-  onProgress?: (label: string) => void,
+  onProgress?: ProgressFn,
   selection: Selection = allSections(),
 ) {
   const user = await currentUser();
@@ -288,7 +288,7 @@ export async function applyImport(
   const keep = (key: string) => enabled(selection, key);
 
   if (keep("profile") && preview.mode === "full" && preview.manifest["profile"] && typeof preview.manifest["profile"] === "object") {
-    onProgress?.("Profile and preferences");
+    onProgress?.("Profile and preferences", 5);
     const row = preview.manifest["profile"] as Row;
     const allowed = ["first_name", "last_name", "display_name", "bio", "phone", "gender", "age", "timezone", "avatar_url", "avg_study_hours"];
     const patch = Object.fromEntries(allowed.filter((key) => key in row).map((key) => [key, row[key]]));
@@ -296,7 +296,7 @@ export async function applyImport(
     if (error) failures.push(`Profile: ${error.message}`);
   }
 
-  onProgress?.("Subjects");
+  onProgress?.("Subjects", 15);
   const existingSubjects = await readAll("subjects");
   const byName = new Map(existingSubjects.map((s) => [String(s["name"]).toLowerCase(), String(s["id"])]));
   const subjectMap = new Map<string, string>();
@@ -319,7 +319,7 @@ export async function applyImport(
     if (!error && data) subjectMap.set(String(row["id"]), String((data as Row)["id"]));
   }
 
-  onProgress?.("Chapters");
+  onProgress?.("Chapters", 30);
   const chapterMap = keep("chapters")
     ? await insertMapped("chapters", list("chapters"), uid, (row) => {
         const subject = subjectMap.get(String(row["subject_id"]));
@@ -328,7 +328,7 @@ export async function applyImport(
       })
     : new Map<string, string>();
 
-  onProgress?.("Topics");
+  onProgress?.("Topics & types", 42);
   const subtopicMap = keep("chapter_subtopics")
     ? await insertMapped("chapter_subtopics", list("chapter_subtopics"), uid, (row) => {
         const chapter = chapterMap.get(String(row["chapter_id"]));
@@ -337,7 +337,7 @@ export async function applyImport(
       })
     : new Map<string, string>();
 
-  onProgress?.("Study history");
+  onProgress?.("Study history", 55);
   const sessionMap = keep("study_sessions")
     ? await insertMapped("study_sessions", list("study_sessions"), uid, (row) => ({
         ...row,
@@ -370,7 +370,7 @@ export async function applyImport(
   // Streaks are day-keyed, so the best of the two records wins per day.
   let streakDays = 0;
   if (keep("streak_days")) {
-    onProgress?.("Streaks");
+    onProgress?.("Streaks", 68);
     for (const row of list("streak_days")) {
       const { error } = await supabase
         .from("streak_days")
@@ -380,7 +380,7 @@ export async function applyImport(
     }
   }
 
-  onProgress?.("Targets and timetable");
+  onProgress?.("Targets, plan & classes", 78);
   for (const table of SIMPLE_TABLES) {
     if (!keep(table)) continue;
     for (const row of list(table)) {
@@ -397,7 +397,7 @@ export async function applyImport(
     }
   }
 
-  onProgress?.("Study media");
+  onProgress?.("Files & notes", 90);
   let restored = 0;
   if (keep("chapter_notes")) {
     for (const row of list("chapter_notes")) {
@@ -423,6 +423,7 @@ export async function applyImport(
     }
   }
 
+  onProgress?.("Done", 100);
   return {
     subjects: subjectMap.size,
     chapters: chapterMap.size,
