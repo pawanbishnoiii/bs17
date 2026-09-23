@@ -73,7 +73,7 @@ async function smtpTransport(cfg: EmailConfigRow) {
   return nodemailer.createTransport({
     host: cfg.smtp_host!,
     port: cfg.smtp_port!,
-    secure: cfg.encryption === "ssl" || cfg.smtp_port === 465,
+    secure: cfg.encryption === "ssl" || cfg.encryption === "tls" || cfg.smtp_port === 465,
     requireTLS: cfg.encryption === "starttls",
     auth: { user: cfg.smtp_user!, pass: cfg.smtp_password! },
     tls: { rejectUnauthorized: cfg.verify_ssl !== false },

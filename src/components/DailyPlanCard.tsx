@@ -28,6 +28,7 @@ import { ActivityArtwork } from "@/components/study-ui";
 import owlIdle from "@/assets/owl-idle.png";
 import beeAsset from "@/assets/bee-baby.riv?url";
 import { RivePlayer } from "@/components/ui/rive-player";
+import { WeeklyFocusPicker } from "@/components/WeeklyFocusPicker";
 
 const STATUS_STYLE: Record<PlanStatus, { label: string; cls: string }> = {
   complete: { label: "Complete", cls: "bg-[var(--mint-soft)] text-emerald-800" },
@@ -168,6 +169,7 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
         <p className="text-xs font-extrabold tracking-tight">{DAY_MODE_COPY[mode].title}</p>
         <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">{DAY_MODE_COPY[mode].hint}</p>
       </div>
+      <WeeklyFocusPicker onSaved={() => regenerate.mutate()} />
 
       {plan.isLoading ? (
         <div className="mt-5 flex items-center gap-4 rounded-2xl bg-secondary p-3"><img src={owlIdle} alt="" className="size-16 shrink-0 object-contain float-soft" /><p className="text-sm font-semibold text-muted-foreground">Building today's syllabus plan…</p></div>

@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.refresh_user_study_plan(uuid, date) FROM PUBLIC, anon, authenticated;
