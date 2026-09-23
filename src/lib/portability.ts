@@ -26,6 +26,39 @@ const SIMPLE_TABLES = [
   "user_xp",
 ] as const;
 
+/** Every part of an export the user can include or leave out. */
+export const TRANSFER_SECTIONS = [
+  { id: "profile", label: "Profile & preferences", keys: ["profile", "user_settings", "reading_goals", "user_xp"] },
+  { id: "subjects", label: "Subjects", keys: ["subjects"] },
+  { id: "chapters", label: "Chapters", keys: ["chapters"] },
+  { id: "subtopics", label: "Topics & types", keys: ["chapter_subtopics"] },
+  { id: "sessions", label: "Study history", keys: ["study_sessions", "session_breaks", "session_outcomes"] },
+  { id: "streaks", label: "Streak history", keys: ["streak_days"] },
+  { id: "plan", label: "Daily plan & revisions", keys: ["daily_study_plan_items", "chapter_learning_state", "class_note_revision_state"] },
+  { id: "targets", label: "Targets & timetable", keys: ["subject_targets", "targets", "timetable_blocks"] },
+  { id: "classes", label: "Online classes & tests", keys: ["online_classes", "test_attempts"] },
+  { id: "reading", label: "Reading logs", keys: ["reading_logs"] },
+  { id: "notes", label: "Notes & PDFs", keys: ["chapter_notes"] },
+] as const;
+
+export type SectionId = (typeof TRANSFER_SECTIONS)[number]["id"];
+export type Selection = Record<SectionId, boolean>;
+
+export function allSections(value = true): Selection {
+  return Object.fromEntries(TRANSFER_SECTIONS.map((section) => [section.id, value])) as Selection;
+}
+
+const SECTION_OF = new Map<string, SectionId>();
+for (const section of TRANSFER_SECTIONS) {
+  for (const key of section.keys) SECTION_OF.set(key, section.id);
+}
+
+/** Is this manifest key part of a selected section? Unknown keys are allowed. */
+function enabled(selection: Selection, key: string) {
+  const section = SECTION_OF.get(key);
+  return section ? selection[section] !== false : true;
+}
+
 export type TransferMode = "full" | "study";
 const VALID_FORMATS = new Set(["bnoy-study-user-export", "chronodeck-user-export"]);
 
@@ -42,37 +75,53 @@ async function readAll(table: string): Promise<Row[]> {
   return (data ?? []) as Row[];
 }
 
+async function readSafe(table: string): Promise<Row[]> {
+  try {
+    return await readAll(table);
+  } catch {
+    return [];
+  }
+}
+
 export type ExportSummary = {
   subjects: number;
   chapters: number;
   sessions: number;
   notes: number;
+  /** Row count per section id, for a precise preview. */
+  counts: Partial<Record<SectionId, number>>;
 };
 
 /** Build the ZIP and hand it back with a short summary for the UI. */
-export async function buildExportZip(mode: TransferMode = "full"): Promise<{ blob: Blob; summary: ExportSummary }> {
+export async function buildExportZip(
+  mode: TransferMode = "full",
+  selection: Selection = allSections(),
+): Promise<{ blob: Blob; summary: ExportSummary }> {
   const user = await currentUser();
+  const keep = (key: string) => enabled(selection, key);
 
   const manifest: Record<string, unknown> = {
     format: "bnoy-study-user-export",
-    version: 2,
+    version: 3,
     transfer_mode: mode,
     exported_at: new Date().toISOString(),
     source_email: user.email ?? null,
+    sections: selection,
   };
 
-  if (mode === "full") {
+  if (mode === "full" && keep("profile")) {
     const profile = await readAll("profiles");
     manifest["profile"] = profile[0] ?? null;
   }
 
-  const subjects = await readAll("subjects");
-  const chapters = await readAll("chapters");
-  const subtopics = await readAll("chapter_subtopics");
-  const sessions = await readAll("study_sessions");
-  const breaks = await readAll("session_breaks");
-  const outcomes = await readAll("session_outcomes");
-  const notes = (await readAll("chapter_notes")) as unknown as ChapterNote[];
+  const subjects = keep("subjects") ? await readAll("subjects") : [];
+  const chapters = keep("chapters") ? await readAll("chapters") : [];
+  const subtopics = keep("chapter_subtopics") ? await readAll("chapter_subtopics") : [];
+  const sessions = keep("study_sessions") ? await readAll("study_sessions") : [];
+  const breaks = keep("session_breaks") ? await readAll("session_breaks") : [];
+  const outcomes = keep("session_outcomes") ? await readAll("session_outcomes") : [];
+  const streaks = keep("streak_days") ? await readSafe("streak_days") : [];
+  const notes = keep("chapter_notes") ? ((await readAll("chapter_notes")) as unknown as ChapterNote[]) : [];
 
   manifest["subjects"] = subjects;
   manifest["chapters"] = chapters;
@@ -80,11 +129,12 @@ export async function buildExportZip(mode: TransferMode = "full"): Promise<{ blo
   manifest["study_sessions"] = sessions;
   manifest["session_breaks"] = breaks;
   manifest["session_outcomes"] = outcomes;
+  manifest["streak_days"] = streaks;
   manifest["chapter_notes"] = notes;
 
   for (const table of SIMPLE_TABLES) {
     if (mode === "study" && ["user_settings", "reading_goals", "user_xp"].includes(table)) continue;
-    manifest[table] = await readAll(table);
+    manifest[table] = keep(table) ? await readAll(table) : [];
   }
 
   const zip = new JSZip();
@@ -108,8 +158,24 @@ export async function buildExportZip(mode: TransferMode = "full"): Promise<{ blo
       chapters: chapters.length,
       sessions: sessions.length,
       notes: notes.length,
+      counts: countSections(manifest),
     },
   };
+}
+
+/** Count the rows each section contributes, so the preview is never guesswork. */
+function countSections(manifest: Record<string, unknown>): Partial<Record<SectionId, number>> {
+  const counts: Partial<Record<SectionId, number>> = {};
+  for (const section of TRANSFER_SECTIONS) {
+    let total = 0;
+    for (const key of section.keys) {
+      const value = manifest[key];
+      if (Array.isArray(value)) total += value.length;
+      else if (key === "profile" && value && typeof value === "object") total += 1;
+    }
+    counts[section.id] = total;
+  }
+  return counts;
 }
 
 export function saveBlob(filename: string, blob: Blob) {
@@ -143,7 +209,7 @@ export async function readImportZip(file: File): Promise<ImportPreview> {
   }
   if (!VALID_FORMATS.has(String(manifest["format"] ?? ""))) throw new Error("Ye valid Bnoy Study export nahi hai");
   const version = Number(manifest["version"] ?? 1);
-  if (!Number.isFinite(version) || version < 1 || version > 2) throw new Error("Is export version ko app support nahi karti");
+  if (!Number.isFinite(version) || version < 1 || version > 3) throw new Error("Is export version ko app support nahi karti");
   const list = (key: string) => (Array.isArray(manifest[key]) ? (manifest[key] as Row[]) : []);
   return {
     zip,
@@ -155,6 +221,7 @@ export async function readImportZip(file: File): Promise<ImportPreview> {
       chapters: list("chapters").length,
       sessions: list("study_sessions").length,
       notes: list("chapter_notes").length,
+      counts: countSections(manifest),
     },
   };
 }
@@ -188,14 +255,19 @@ async function insertMapped(
 }
 
 /** Write an uploaded export into the signed-in account. Existing data stays. */
-export async function applyImport(preview: ImportPreview, onProgress?: (label: string) => void) {
+export async function applyImport(
+  preview: ImportPreview,
+  onProgress?: (label: string) => void,
+  selection: Selection = allSections(),
+) {
   const user = await currentUser();
   const uid = user.id;
   const list = (key: string) => (Array.isArray(preview.manifest[key]) ? (preview.manifest[key] as Row[]) : []);
   const str = (value: unknown) => (typeof value === "string" ? value : null);
   const failures: string[] = [];
+  const keep = (key: string) => enabled(selection, key);
 
-  if (preview.mode === "full" && preview.manifest["profile"] && typeof preview.manifest["profile"] === "object") {
+  if (keep("profile") && preview.mode === "full" && preview.manifest["profile"] && typeof preview.manifest["profile"] === "object") {
     onProgress?.("Profile and preferences");
     const row = preview.manifest["profile"] as Row;
     const allowed = ["first_name", "last_name", "display_name", "bio", "phone", "gender", "age", "timezone", "avatar_url", "avg_study_hours"];
@@ -216,6 +288,9 @@ export async function applyImport(preview: ImportPreview, onProgress?: (label: s
       subjectMap.set(String(row["id"]), dupe);
       continue;
     }
+    // Subjects left out of the import still map onto same-named subjects the
+    // account already has, so chapters and history keep their links.
+    if (!keep("subjects")) continue;
     const { data, error } = await supabase
       .from("subjects")
       .insert(strip(row, uid) as never)
@@ -225,45 +300,69 @@ export async function applyImport(preview: ImportPreview, onProgress?: (label: s
   }
 
   onProgress?.("Chapters");
-  const chapterMap = await insertMapped("chapters", list("chapters"), uid, (row) => {
-    const subject = subjectMap.get(String(row["subject_id"]));
-    if (!subject) return null;
-    return { ...row, subject_id: subject };
-  });
+  const chapterMap = keep("chapters")
+    ? await insertMapped("chapters", list("chapters"), uid, (row) => {
+        const subject = subjectMap.get(String(row["subject_id"]));
+        if (!subject) return null;
+        return { ...row, subject_id: subject };
+      })
+    : new Map<string, string>();
 
   onProgress?.("Topics");
-  const subtopicMap = await insertMapped("chapter_subtopics", list("chapter_subtopics"), uid, (row) => {
-    const chapter = chapterMap.get(String(row["chapter_id"]));
-    if (!chapter) return null;
-    return { ...row, chapter_id: chapter };
-  });
+  const subtopicMap = keep("chapter_subtopics")
+    ? await insertMapped("chapter_subtopics", list("chapter_subtopics"), uid, (row) => {
+        const chapter = chapterMap.get(String(row["chapter_id"]));
+        if (!chapter) return null;
+        return { ...row, chapter_id: chapter };
+      })
+    : new Map<string, string>();
 
   onProgress?.("Study history");
-  const sessionMap = await insertMapped("study_sessions", list("study_sessions"), uid, (row) => ({
-    ...row,
-    subject_id: subjectMap.get(String(row["subject_id"])) ?? null,
-    chapter_id: chapterMap.get(String(row["chapter_id"])) ?? null,
-    subtopic_id: subtopicMap.get(String(row["subtopic_id"])) ?? null,
-  }));
-
-  for (const row of list("session_breaks")) {
-    const session = sessionMap.get(String(row["session_id"])) ?? null;
-    await supabase.from("session_breaks").insert(strip(row, uid, { session_id: session }) as never);
-  }
-  for (const row of list("session_outcomes")) {
-    const session = sessionMap.get(String(row["session_id"]));
-    if (!session) continue;
-    await supabase.from("session_outcomes").insert(
-      strip(row, uid, {
-        session_id: session,
+  const sessionMap = keep("study_sessions")
+    ? await insertMapped("study_sessions", list("study_sessions"), uid, (row) => ({
+        ...row,
+        subject_id: subjectMap.get(String(row["subject_id"])) ?? null,
         chapter_id: chapterMap.get(String(row["chapter_id"])) ?? null,
         subtopic_id: subtopicMap.get(String(row["subtopic_id"])) ?? null,
-      }) as never,
-    );
+      }))
+    : new Map<string, string>();
+
+  if (keep("session_breaks")) {
+    for (const row of list("session_breaks")) {
+      const session = sessionMap.get(String(row["session_id"])) ?? null;
+      await supabase.from("session_breaks").insert(strip(row, uid, { session_id: session }) as never);
+    }
+  }
+  if (keep("session_outcomes")) {
+    for (const row of list("session_outcomes")) {
+      const session = sessionMap.get(String(row["session_id"]));
+      if (!session) continue;
+      await supabase.from("session_outcomes").insert(
+        strip(row, uid, {
+          session_id: session,
+          chapter_id: chapterMap.get(String(row["chapter_id"])) ?? null,
+          subtopic_id: subtopicMap.get(String(row["subtopic_id"])) ?? null,
+        }) as never,
+      );
+    }
+  }
+
+  // Streaks are day-keyed, so the best of the two records wins per day.
+  let streakDays = 0;
+  if (keep("streak_days")) {
+    onProgress?.("Streaks");
+    for (const row of list("streak_days")) {
+      const { error } = await supabase
+        .from("streak_days")
+        .upsert(strip(row, uid) as never, { onConflict: "user_id,day" });
+      if (error) failures.push(`Streaks: ${error.message}`);
+      else streakDays += 1;
+    }
   }
 
   onProgress?.("Targets and timetable");
   for (const table of SIMPLE_TABLES) {
+    if (!keep(table)) continue;
     for (const row of list(table)) {
       const extra: Row = {};
       if ("subject_id" in row) extra["subject_id"] = subjectMap.get(String(row["subject_id"])) ?? null;
@@ -280,27 +379,36 @@ export async function applyImport(preview: ImportPreview, onProgress?: (label: s
 
   onProgress?.("Study media");
   let restored = 0;
-  for (const row of list("chapter_notes")) {
-    const id = String(row["id"]);
-    const file = preview.zip?.file(new RegExp(`^(media/${id}\\.[^/]+|pdfs/${id}\\.pdf)$`, "i"))[0];
-    if (!file) continue;
-    const blob = await file.async("blob");
-    try {
-      const mimeType = str(row["mime_type"]);
-      await restoreNote({
-        blob,
-        title: String(row["title"] ?? "notes.pdf"),
-        subject_id: subjectMap.get(String(row["subject_id"])) ?? null,
-        chapter_name: str(row["chapter_name"]),
-        topic: str(row["topic"]),
-        position: Number(row["position"]) || restored + 1,
-        ...(mimeType ? { mime_type: mimeType } : {}),
-      });
-      restored += 1;
-    } catch (error) {
-      failures.push(`${String(row["title"] ?? "Media")}: ${error instanceof Error ? error.message : "restore failed"}`);
+  if (keep("chapter_notes")) {
+    for (const row of list("chapter_notes")) {
+      const id = String(row["id"]);
+      const file = preview.zip?.file(new RegExp(`^(media/${id}\\.[^/]+|pdfs/${id}\\.pdf)$`, "i"))[0];
+      if (!file) continue;
+      const blob = await file.async("blob");
+      try {
+        const mimeType = str(row["mime_type"]);
+        await restoreNote({
+          blob,
+          title: String(row["title"] ?? "notes.pdf"),
+          subject_id: subjectMap.get(String(row["subject_id"])) ?? null,
+          chapter_name: str(row["chapter_name"]),
+          topic: str(row["topic"]),
+          position: Number(row["position"]) || restored + 1,
+          ...(mimeType ? { mime_type: mimeType } : {}),
+        });
+        restored += 1;
+      } catch (error) {
+        failures.push(`${String(row["title"] ?? "Media")}: ${error instanceof Error ? error.message : "restore failed"}`);
+      }
     }
   }
 
-  return { subjects: subjectMap.size, chapters: chapterMap.size, sessions: sessionMap.size, notes: restored, failures };
+  return {
+    subjects: subjectMap.size,
+    chapters: chapterMap.size,
+    sessions: sessionMap.size,
+    notes: restored,
+    streakDays,
+    failures,
+  };
 }
