@@ -6,16 +6,21 @@ import { CalendarDays, Check, Loader2, Play, RefreshCw, SkipForward, X } from "l
 import {
   TOP_TASKS_COUNT,
   fetchPlan,
+  fetchPlanRange,
   generatePlan,
   localDateKey,
+  monthRange,
   planItemMinutes,
   planItemStatus,
+  planTotals,
   setPlanItemState,
   visiblePlanItems,
+  weekRange,
   type PlanItemState,
   type PlanStatus,
   type PlanItem,
 } from "@/lib/plan";
+
 import { fmtHM, startOfToday, type Session } from "@/lib/study";
 import { DAY_MODE_COPY, dayMode } from "@/lib/goals";
 import { savePlanDone } from "@/lib/offline-actions";
