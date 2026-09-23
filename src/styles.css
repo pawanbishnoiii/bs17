@@ -193,10 +193,6 @@
 
   body {
     background-color: var(--background);
-    background-image: var(--app-bg-mobile, url("/__l5e/assets-v1/cec1c937-a95b-42d7-b526-642821c969f3/bg-mobile.png"));
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-display-family);
     -webkit-font-smoothing: antialiased;
@@ -535,17 +531,8 @@ body.dark {
 /* Ambient app backdrop: fine slate grid + one soft indigo wash at the top. */
 @utility app-backdrop {
   position: relative;
-  background-color: var(--background);
-  background-image: var(--app-bg-mobile, url("/__l5e/assets-v1/cec1c937-a95b-42d7-b526-642821c969f3/bg-mobile.png"));
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-}
-@media (min-width: 1024px) {
-  .app-backdrop {
-    background-image: var(--app-bg-desktop, url("/__l5e/assets-v1/94b13068-037f-4aac-b941-2580a7a04114/bg-desktop.png"));
-    background-attachment: fixed;
-  }
+  background-color: transparent;
+  isolation: isolate;
 }
 
 :root[data-background="clean"] .app-backdrop { background-image: none; }

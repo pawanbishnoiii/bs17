@@ -1034,10 +1034,14 @@ export type AppSettings = {
   revision_min_passes: number;
   revision_max_passes: number;
   revision_intervals: number[];
+  bg_mobile_url: string | null;
+  bg_desktop_url: string | null;
+  bg_blur: number;
+  bg_overlay: number;
 };
 
 const APP_SETTINGS_COLS =
-  "site_name,tagline,support_email,banner_text,ai_enabled,manual_log_enabled,landing_enabled,maintenance_note,signup_enabled,google_auth_enabled,one_tap_enabled,email_auth_enabled,onboarding_require_subjects,default_daily_goal_hours,default_weekly_goal_hours,announcement_level,accent_color,favicon_url,logo_url,revision_min_passes,revision_max_passes,revision_intervals";
+  "site_name,tagline,support_email,banner_text,ai_enabled,manual_log_enabled,landing_enabled,maintenance_note,signup_enabled,google_auth_enabled,one_tap_enabled,email_auth_enabled,onboarding_require_subjects,default_daily_goal_hours,default_weekly_goal_hours,announcement_level,accent_color,favicon_url,logo_url,revision_min_passes,revision_max_passes,revision_intervals,bg_mobile_url,bg_desktop_url,bg_blur,bg_overlay";
 
 export async function fetchAppSettings(): Promise<AppSettings | null> {
   const { data, error } = await supabase
