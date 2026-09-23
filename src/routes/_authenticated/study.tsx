@@ -281,7 +281,7 @@ function StudySetupPage() {
   };
 
   return (
-    <div className="app-page text-foreground">
+    <div className="app-page overflow-x-clip text-foreground">
       <motion.div
         initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -301,7 +301,7 @@ function StudySetupPage() {
             alt="Student building a learning path with books"
             width={1200}
             height={1200}
-            className="absolute -right-8 -bottom-24 hidden size-72 object-contain md:block"
+            className="absolute right-0 -bottom-24 hidden size-72 object-contain md:block"
           />
         </section>
 
