@@ -6,6 +6,7 @@ import {
   ArchiveRestore,
   CalendarRange,
   LayoutDashboard,
+  Mail,
   Palette,
   Settings2,
   Smartphone,
