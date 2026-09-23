@@ -183,14 +183,62 @@ function StudySetupPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.plan, plan.data]);
 
+  const addChaptersMutation = useMutation({
+    mutationFn: (names: string[]) => addChapters(form.subject_id, names),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["chapters", form.subject_id] });
+      setChapterSheet(false);
+      setChapterDraft("");
+      toast.success("Chapter(s) added");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const addTypesMutation = useMutation({
+    mutationFn: ({ chapterId: cid, names }: { chapterId: string; names: string[] }) => addChapterSubtopics(cid, names),
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ["chapter_subtopics", vars.chapterId] });
+      setTypeSheet(false);
+      setTypeChapterId("");
+      setTypeDraft("");
+      toast.success("Type(s) added");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveChapterMutation = useMutation({
+    mutationFn: async (input: { id: string; name: string; position: number }) => {
+      await renameChapter(input.id, input.name);
+      await renumberChapter(input.id, input.position);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["chapters", form.subject_id] });
+      setEditChapter(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveSubtopicMutation = useMutation({
+    mutationFn: async (input: { id: string; name: string; position: number }) => {
+      await renameChapterSubtopic(input.id, input.name);
+      await renumberChapterSubtopic(input.id, input.position);
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["chapter_subtopics", chapterId] });
+      setEditSubtopic(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const start = useMutation({
     mutationFn: async () => {
       const subj = (subjects.data ?? []).find((s) => s.id === form.subject_id);
       const plannedEnd = form.planned_end_at ? localTimeToIsoToday(form.planned_end_at) : null;
+      const fallbackTopic = selectedSubtopic ? `${selectedSubtopic.position}. ${selectedSubtopic.name}` : null;
       return startSession({
         subject_id: subj?.id ?? null,
         subject_name: subj?.name ?? (form.subject_name.trim() || "Study"),
-        topic: form.topic.trim() || null,
+        topic: form.topic.trim() || fallbackTopic,
         chapter: form.chapter.trim() || null,
         kind: form.kind,
         planned_end_at: plannedEnd,

@@ -148,25 +148,47 @@ export async function syncSystemFolders() {
       await supabase.from("class_folders").update({ name: subject.name }).eq("id", subjectFolder.id);
     }
 
-    const chapters = (subject as unknown as { chapterRows?: { id: string; name: string }[] }).chapterRows ?? [];
+    const chapters = await fetchChapters(subject.id);
     for (const [ci, chapter] of chapters.entries()) {
-      const found = byChapter.get(chapter.id);
-      if (!found) {
-        await supabase.from("class_folders").insert({
-          user_id: user,
-          parent_id: subjectFolder.id,
-          name: chapter.name,
-          kind: "chapter",
-          subject_id: subject.id,
-          chapter_id: chapter.id,
-          system_managed: true,
-          position: ci,
-        });
-      } else if (found.name !== chapter.name || found.parent_id !== subjectFolder.id) {
+      let chapterFolder = byChapter.get(chapter.id) ?? null;
+      if (!chapterFolder) {
+        const { data, error } = await supabase
+          .from("class_folders")
+          .insert({
+            user_id: user,
+            parent_id: subjectFolder.id,
+            name: chapter.name,
+            kind: "chapter",
+            subject_id: subject.id,
+            chapter_id: chapter.id,
+            system_managed: true,
+            position: ci,
+          })
+          .select(FOLDER_COLUMNS)
+          .single();
+        if (error) throw error;
+        chapterFolder = data as unknown as LibraryFolder;
+      } else if (chapterFolder.name !== chapter.name || chapterFolder.parent_id !== subjectFolder.id) {
         await supabase
           .from("class_folders")
           .update({ name: chapter.name, parent_id: subjectFolder.id })
-          .eq("id", found.id);
+          .eq("id", chapterFolder.id);
+      }
+
+      const types = await fetchChapterSubtopics(chapter.id);
+      for (const [ti, type] of types.entries()) {
+        const key = `${chapter.id}:${type.name.toLowerCase()}`;
+        if (byType.has(key)) continue;
+        await supabase.from("class_folders").insert({
+          user_id: user,
+          parent_id: chapterFolder.id,
+          name: `${type.position || ti + 1}. ${type.name}`,
+          kind: "type",
+          subject_id: subject.id,
+          chapter_id: chapter.id,
+          system_managed: true,
+          position: type.position || ti + 1,
+        });
       }
     }
   }
