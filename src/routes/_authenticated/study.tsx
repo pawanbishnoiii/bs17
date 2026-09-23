@@ -307,7 +307,7 @@ function StudySetupPage() {
                           <span className="block truncate text-sm font-extrabold">{activeSubject?.name ?? form.subject_name}</span>
                           <span className="text-xs text-muted-foreground">Selected subject</span>
                         </span>
-                        <Button variant="outline" size="sm" onClick={() => setForm({ ...form, subject_id: "", subject_name: "", chapter: "", topic: "" })}>Change</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setForm({ ...form, subject_id: "", subject_name: "", chapter: "", topic: "" }); setChapterId(""); setSubtopicId(""); }}>Change</Button>
                       </div>
                     ) : <><label className="relative mt-4 block">
                       <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -339,7 +339,7 @@ function StudySetupPage() {
                             key={x.id}
                             type="button"
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => { hapticSelect(); setForm({ ...form, subject_id: x.id, subject_name: x.name, chapter: "" }); }}
+                            onClick={() => { hapticSelect(); setForm({ ...form, subject_id: x.id, subject_name: x.name, chapter: "" }); setChapterId(""); setSubtopicId(""); }}
                             aria-pressed={on}
                             className={`flex min-h-24 items-center gap-3 rounded-[22px] border-2 p-4 text-left transition ${
                               on
@@ -620,6 +620,8 @@ function StudySetupPage() {
           selectedId={form.subject_id}
           onSelect={(s) => {
             setForm((f) => ({ ...f, subject_id: s.id, subject_name: s.name, chapter: "" }));
+            setChapterId("");
+            setSubtopicId("");
             setSubjectSheet(false);
             setStep(2);
           }}
