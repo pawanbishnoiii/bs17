@@ -330,6 +330,11 @@
   --pop-ink: #14151a;
 }
 
+.dark body,
+body.dark {
+  background: var(--color-background);
+}
+
 .dark {
   --pop-lavender: #332c4d;
   --pop-sky: #1d2e4a;
