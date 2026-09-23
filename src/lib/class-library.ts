@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { logErrorEvent } from "@/lib/error-log";
-import { fetchSubjects } from "@/lib/study";
+import { fetchChapterSubtopics, fetchChapters, fetchSubjects } from "@/lib/study";
 
 export const LIBRARY_BUCKET = "class-media";
 export const MAX_MEDIA_BYTES = 200 * 1024 * 1024;
