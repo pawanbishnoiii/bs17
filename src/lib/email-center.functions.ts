@@ -101,7 +101,10 @@ export const verifyEmailConnection = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const db = await admin(context);
     const { loadConfig, verifyConnection } = await import("@/lib/email-sender.server");
-    const cfg = await loadConfig(db);
+    let cfg;
+    try { cfg = await loadConfig(db); } catch (e) {
+      return { ok: false as const, code: "NO_CONFIG", message: "Pehle SMTP settings bhar kar Save dabaiye, phir test karein.", detail: (e as Error).message };
+    }
     const result = await verifyConnection(cfg);
     await db
       .from("email_settings")
@@ -121,7 +124,10 @@ export const sendEmailTest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = await admin(context);
     const { loadConfig, deliver } = await import("@/lib/email-sender.server");
-    const cfg = await loadConfig(db);
+    let cfg;
+    try { cfg = await loadConfig(db); } catch (e) {
+      return { ok: false as const, code: "NO_CONFIG", message: "Pehle SMTP settings bhar kar Save dabaiye, phir test karein.", detail: (e as Error).message };
+    }
     const result = await deliver(cfg, {
       to: data.to,
       subject: data.subject || "Bnoy Study — test email",
