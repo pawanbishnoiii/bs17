@@ -355,6 +355,26 @@ export function ClassLibrary() {
                       </button>
                       <button
                         type="button"
+                        aria-label={`Rename ${item.title}`}
+                        onClick={() => {
+                          const title = window.prompt("Naya naam", item.title)?.trim();
+                          if (title && title !== item.title) rename.mutate({ item, title });
+                        }}
+                        className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Copy link for ${item.title}`}
+                        onClick={() => void copyLink(item)}
+                        className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground"
+                      >
+                        <Copy className="size-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
                         aria-label={`Delete ${item.title}`}
                         onClick={() => removeMedia.mutate(item)}
                         className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground hover:text-destructive"
