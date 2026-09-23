@@ -33,6 +33,7 @@ import { TodayStudyAnalytics } from "@/components/TodayStudyAnalytics";
 import { LevelProgressCard } from "@/components/LevelProgressCard";
 import { NoticeBoard } from "@/components/NoticeBoard";
 import { studyStreak } from "@/lib/streak";
+import { dayProgress } from "@/lib/goals";
 
 import {
   DAYS,
@@ -96,6 +97,7 @@ function TodayPage() {
   const [startOpen, setStartOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [scope, setScope] = useState<"day" | "week" | "month">("day");
+  const [statTab, setStatTab] = useState<"today" | "week" | "month">("today");
   const [subjScope, setSubjScope] = useState<"1D" | "1W" | "1M">("1D");
   const [editSubject, setEditSubject] = useState<{
     id: string;
@@ -185,6 +187,21 @@ function TodayPage() {
   const heroMood = mascotState({ goalHit: todayMin >= dailyGoal * 60, streak });
 
   const activeTargets = (targets.data ?? []).filter((t) => t.is_active);
+
+  // Percentage based daily goal: every activity type earns its own rate.
+  const todaySessions = useMemo(() => {
+    const since = startOfToday().getTime();
+    return all.filter((s) => new Date(s.started_at).getTime() >= since);
+  }, [all]);
+  const today = useMemo(() => dayProgress(todaySessions), [todaySessions]);
+
+  const firstName = (profile.data?.full_name ?? "").trim().split(" ")[0] ?? "";
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  })();
 
   const quote = useMemo(() => {
     const qs = (motivations.data ?? []).filter((m) => m.kind === "quote");

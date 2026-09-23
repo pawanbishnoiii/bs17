@@ -46,10 +46,16 @@ const stepMotion = {
 export const Route = createFileRoute("/_authenticated/study")({
   validateSearch: (
     search: Record<string, unknown>,
-  ): { block?: string | undefined; plan?: string | undefined; date?: string | undefined } => ({
+  ): {
+    block?: string | undefined;
+    plan?: string | undefined;
+    date?: string | undefined;
+    kind?: string | undefined;
+  } => ({
     block: typeof search["block"] === "string" ? search["block"] : undefined,
     plan: typeof search["plan"] === "string" ? search["plan"] : undefined,
     date: typeof search["date"] === "string" ? search["date"] : undefined,
+    kind: typeof search["kind"] === "string" ? search["kind"] : undefined,
   }),
   head: () => ({
     meta: [
