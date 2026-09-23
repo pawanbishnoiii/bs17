@@ -61,9 +61,9 @@ export function studyStreak(sessions: Session[], dailyGoalHours: number): Streak
   const progressByDay: Record<string, number> = {};
   for (const session of sessions) {
     if (session.is_running || !session.duration_minutes) continue;
-    const rate = session.kind === "revision" ? 25 : session.kind === "class" ? 15 : 20;
     const day = key(new Date(session.started_at));
-    progressByDay[day] = Math.min(100, (progressByDay[day] ?? 0) + (session.duration_minutes / 60) * rate);
+    const earned = percentFor(session.kind, session.duration_minutes);
+    progressByDay[day] = Math.min(100, (progressByDay[day] ?? 0) + earned);
   }
   const goal = goalFor(dailyGoalHours);
 
