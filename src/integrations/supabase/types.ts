@@ -681,6 +681,27 @@ export type Database = {
           },
         ]
       }
+      cron_config: {
+        Row: {
+          base_url: string
+          created_at: string
+          id: boolean
+          token: string
+        }
+        Insert: {
+          base_url?: string
+          created_at?: string
+          id?: boolean
+          token: string
+        }
+        Update: {
+          base_url?: string
+          created_at?: string
+          id?: boolean
+          token?: string
+        }
+        Relationships: []
+      }
       daily_study_plan_items: {
         Row: {
           cancelled_at: string | null
@@ -837,39 +858,317 @@ export type Database = {
         }
         Relationships: []
       }
+      email_automations: {
+        Row: {
+          active: boolean
+          conditions: Json
+          created_at: string
+          delay_minutes: number
+          id: string
+          name: string
+          template_slug: string
+          trigger_event: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          conditions?: Json
+          created_at?: string
+          delay_minutes?: number
+          id?: string
+          name: string
+          template_slug: string
+          trigger_event: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          conditions?: Json
+          created_at?: string
+          delay_minutes?: number
+          id?: string
+          name?: string
+          template_slug?: string
+          trigger_event?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_campaigns: {
+        Row: {
+          audience: string
+          created_at: string
+          created_by: string | null
+          failed_count: number
+          filters: Json
+          html_body: string
+          id: string
+          kind: string
+          queued_count: number
+          send_at: string | null
+          sent_count: number
+          status: string
+          subject: string
+          template_slug: string | null
+          title: string
+          updated_at: string
+          user_ids: string[]
+        }
+        Insert: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          failed_count?: number
+          filters?: Json
+          html_body: string
+          id?: string
+          kind?: string
+          queued_count?: number
+          send_at?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          template_slug?: string | null
+          title: string
+          updated_at?: string
+          user_ids?: string[]
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          failed_count?: number
+          filters?: Json
+          html_body?: string
+          id?: string
+          kind?: string
+          queued_count?: number
+          send_at?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          template_slug?: string | null
+          title?: string
+          updated_at?: string
+          user_ids?: string[]
+        }
+        Relationships: []
+      }
+      email_logs: {
+        Row: {
+          campaign_id: string | null
+          created_at: string
+          detail: string | null
+          event: string
+          id: string
+          queue_id: string | null
+          subject: string | null
+          to_email: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string
+          detail?: string | null
+          event: string
+          id?: string
+          queue_id?: string | null
+          subject?: string | null
+          to_email: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string
+          detail?: string | null
+          event?: string
+          id?: string
+          queue_id?: string | null
+          subject?: string | null
+          to_email?: string
+        }
+        Relationships: []
+      }
+      email_queue: {
+        Row: {
+          attempts: number
+          campaign_id: string | null
+          created_at: string
+          html_body: string
+          id: string
+          kind: string
+          last_error: string | null
+          max_attempts: number
+          next_attempt_at: string
+          sent_at: string | null
+          status: string
+          subject: string
+          to_email: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          campaign_id?: string | null
+          created_at?: string
+          html_body: string
+          id?: string
+          kind?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          to_email: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          campaign_id?: string | null
+          created_at?: string
+          html_body?: string
+          id?: string
+          kind?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_attempt_at?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          to_email?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_queue_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_settings: {
         Row: {
+          adapter: string
+          api_key: string | null
+          encryption: string
           from_email: string | null
           from_name: string | null
           id: boolean
+          last_error: string | null
+          last_verified_at: string | null
           provider: string | null
+          reply_to: string | null
           smtp_host: string | null
           smtp_password: string | null
           smtp_port: number | null
           smtp_user: string | null
+          timeout_seconds: number
           updated_at: string | null
+          verify_ssl: boolean
         }
         Insert: {
+          adapter?: string
+          api_key?: string | null
+          encryption?: string
           from_email?: string | null
           from_name?: string | null
           id: boolean
+          last_error?: string | null
+          last_verified_at?: string | null
           provider?: string | null
+          reply_to?: string | null
           smtp_host?: string | null
           smtp_password?: string | null
           smtp_port?: number | null
           smtp_user?: string | null
+          timeout_seconds?: number
           updated_at?: string | null
+          verify_ssl?: boolean
         }
         Update: {
+          adapter?: string
+          api_key?: string | null
+          encryption?: string
           from_email?: string | null
           from_name?: string | null
           id?: boolean
+          last_error?: string | null
+          last_verified_at?: string | null
           provider?: string | null
+          reply_to?: string | null
           smtp_host?: string | null
           smtp_password?: string | null
           smtp_port?: number | null
           smtp_user?: string | null
+          timeout_seconds?: number
           updated_at?: string | null
+          verify_ssl?: boolean
+        }
+        Relationships: []
+      }
+      email_suppressions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          reason: string
+          scope: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          reason?: string
+          scope?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          reason?: string
+          scope?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          category: string
+          created_at: string
+          html_body: string
+          id: string
+          is_system: boolean
+          name: string
+          slug: string
+          subject: string
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          html_body: string
+          id?: string
+          is_system?: boolean
+          name: string
+          slug: string
+          subject: string
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          html_body?: string
+          id?: string
+          is_system?: boolean
+          name?: string
+          slug?: string
+          subject?: string
+          updated_at?: string
+          variables?: Json
         }
         Relationships: []
       }
