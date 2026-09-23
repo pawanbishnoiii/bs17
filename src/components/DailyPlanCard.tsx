@@ -266,3 +266,73 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
           })}
         </ul>
       )}
+
+      {totalPages > 1 ? (
+        <div className="mt-4 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-bold disabled:opacity-40"
+          >
+            <ChevronLeft className="size-4" aria-hidden="true" /> Back
+          </button>
+          <p className="text-[11px] font-bold text-muted-foreground">
+            {page + 1} / {totalPages}
+          </p>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-bold disabled:opacity-40"
+          >
+            Next <ChevronRight className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+      ) : null}
+
+      <div className="mt-5 rounded-2xl border border-border bg-panel p-3">
+        <div className="flex items-center gap-1.5">
+          {(["day", "week", "month"] as const).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRange(r)}
+              className={`min-h-9 rounded-full px-3 text-xs font-bold capitalize transition ${
+                range === r ? "bg-foreground text-background" : "border border-border text-muted-foreground"
+              }`}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+
+        {range === "day" ? (
+          <p className="mt-2 text-[11px] font-semibold text-muted-foreground">
+            {ranked.length} tasks today · {fmtHM(plannedMinutes)} planned
+          </p>
+        ) : rangeQuery.isLoading ? (
+          <p className="mt-2 text-[11px] font-semibold text-muted-foreground">Loading summary…</p>
+        ) : (
+          <div className="mt-3 space-y-3">
+            <p className="text-[11px] font-semibold text-muted-foreground">
+              {fmtHM(totals.planned)} planned · {fmtHM(totals.done)} done
+            </p>
+            {upcoming.length > 0 ? (
+              <ul className="space-y-1.5">
+                {upcoming.map((i) => (
+                  <li key={i.id} className="flex items-center justify-between gap-2 text-[11px] font-semibold">
+                    <span className="truncate">{i.chapter_name ?? i.subject_name ?? "Revision"}</span>
+                    <span className="shrink-0 text-muted-foreground">
+                      {new Date(i.next_review_at!).toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
