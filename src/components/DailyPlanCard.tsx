@@ -100,7 +100,7 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
   const rangeQuery = useQuery({
     queryKey: ["plan-range", bounds?.from, bounds?.to],
     queryFn: () => fetchPlanRange(bounds!.from, bounds!.to),
-    enabled: page > 0 && !!bounds,
+    enabled: !!bounds,
   });
   const totals = planTotals(rangeQuery.data ?? []);
   const upcoming = (rangeQuery.data ?? [])
