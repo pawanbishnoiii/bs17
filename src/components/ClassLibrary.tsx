@@ -150,6 +150,27 @@ export function ClassLibrary() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const rename = useMutation({
+    mutationFn: (v: { item: LibraryMedia; title: string }) => renameMedia(v.item, v.title),
+    onSuccess: () => {
+      refresh();
+      toast.success("Naam badal diya");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  async function copyLink(item: LibraryMedia) {
+    try {
+      const url = item.external_url ?? (await mediaUrl(item));
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copy ho gaya");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+
+
   // Signed links expire, so fetch one only while the viewer is open.
   useEffect(() => {
     let cancelled = false;
