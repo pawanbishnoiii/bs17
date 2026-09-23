@@ -95,7 +95,19 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
 
   const mode = dayMode();
   const [showAll, setShowAll] = useState(false);
-  const all = plan.data ?? [];
+  const [range, setRange] = useState<"day" | "week" | "month">("day");
+  const bounds = range === "week" ? weekRange() : range === "month" ? monthRange() : null;
+  const rangeQuery = useQuery({
+    queryKey: ["plan-range", bounds?.from, bounds?.to],
+    queryFn: () => fetchPlanRange(bounds!.from, bounds!.to),
+    enabled: showAll && !!bounds,
+  });
+  const totals = planTotals(rangeQuery.data ?? []);
+  const upcoming = (rangeQuery.data ?? [])
+    .filter((i) => i.next_review_at && !i.completed_at)
+    .sort((a, b) => (a.next_review_at! < b.next_review_at! ? -1 : 1))
+    .slice(0, 5);
+
   const ranked = visiblePlanItems(all);
   const items = showAll ? ranked : ranked.slice(0, TOP_TASKS_COUNT);
   const hidden = ranked.length - items.length;
