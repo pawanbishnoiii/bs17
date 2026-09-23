@@ -32,6 +32,7 @@ import {
   logEvent,
 } from "@/lib/study";
 import { CinematicThemeSwitcher } from "@/components/ui/cinematic-theme-switcher";
+import { DashboardSidebar, type DashboardNavGroup } from "@/components/ui/dashboard-sidebar";
 import { LiquidMorphFloatingMenu } from "@/components/ui/liquid-morph-floating-menu";
 import { PushPrompt } from "@/components/PushPrompt";
 import { NotificationBell } from "@/components/NotificationBell";
