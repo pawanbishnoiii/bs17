@@ -7,6 +7,7 @@ import {
   TOP_TASKS_COUNT,
   fetchPlan,
   fetchPlanRange,
+  generateWeekPlan,
   generatePlan,
   localDateKey,
   monthRange,
@@ -100,7 +101,10 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
   const bounds = range === "week" ? weekRange() : range === "month" ? monthRange() : null;
   const rangeQuery = useQuery({
     queryKey: ["plan-range", bounds?.from, bounds?.to],
-    queryFn: () => fetchPlanRange(bounds!.from, bounds!.to),
+    queryFn: async () => {
+      if (range === "week") await generateWeekPlan();
+      return fetchPlanRange(bounds!.from, bounds!.to);
+    },
     enabled: !!bounds,
   });
   const totals = planTotals(rangeQuery.data ?? []);
