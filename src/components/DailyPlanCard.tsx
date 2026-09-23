@@ -181,14 +181,17 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
         <div className="mt-5 flex items-center gap-4 rounded-2xl bg-secondary p-3"><img src={owlIdle} alt="" className="size-16 shrink-0 object-contain" /><p className="text-sm text-muted-foreground">No plan yet. Add subjects with chapters and press Regenerate.</p></div>
       ) : (
         <ul className="mt-5 space-y-3">
-          {rows.map(({ item, minutes, status }) => {
+          {rows.map(({ item, minutes, status }, idx) => {
             const style = STATUS_STYLE[status];
             const pct = item.target_minutes
               ? Math.min(100, Math.round((minutes / item.target_minutes) * 100))
               : 0;
             return (
               <li key={item.id} className="rounded-2xl border border-border bg-panel p-3">
-                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3">
+                <div className="grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-start gap-3">
+                  <span className="num grid size-7 shrink-0 place-items-center rounded-full bg-primary text-[11px] font-extrabold text-primary-foreground">
+                    {page * TOP_TASKS_COUNT + idx + 1}
+                  </span>
                   <ActivityArtwork
                     kind={KIND_ART[item.session_kind] ?? "reading"}
                     className="size-11 shrink-0"
