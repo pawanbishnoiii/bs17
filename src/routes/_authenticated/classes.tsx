@@ -130,6 +130,7 @@ function ClassesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const [tab, setTab] = useState<"files" | "classes" | "notes">("files");
   const rows = classes.data ?? [];
   const due = (revisions.data ?? []).filter((r) => r.revisions_done < r.target_revisions);
 
@@ -145,6 +146,26 @@ function ClassesPage() {
         }
       />
 
+      <nav aria-label="Classes workspace" className="sticky top-[72px] z-20 flex gap-2 overflow-x-auto rounded-full border border-border bg-panel/95 p-1.5 shadow-sm">
+        {([
+          ["files", "File manager"],
+          ["classes", "Online classes"],
+          ["notes", "Chapter notes"],
+        ] as const).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setTab(key)}
+            className={`shrink-0 rounded-full px-4 py-2 text-sm font-extrabold transition ${tab === key ? "bg-brand text-brand-foreground shadow" : "text-muted-foreground hover:bg-muted"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      {tab === "files" ? <ClassLibrary /> : null}
+
+      {tab === "classes" ? (
       <div className="grid gap-5 lg:grid-cols-2">
       <section className="clay-card-vibrant p-5">
         <div className="flex items-center gap-3">
@@ -266,12 +287,9 @@ function ClassesPage() {
         )}
       </section>
       </div>
+      ) : null}
 
-      {/* Folder-style file manager for class material */}
-      <ClassLibrary />
-
-      {/* Chapter PDFs — upload, order, preview and download notes per chapter */}
-      <ChapterNotesPanel />
+      {tab === "notes" ? <ChapterNotesPanel /> : null}
 
       {open ? (
         <ResponsiveSheet open title="Add online class" onClose={() => setOpen(false)}>
