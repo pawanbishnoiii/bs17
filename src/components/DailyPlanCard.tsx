@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { CalendarDays, Check, Loader2, Play, RefreshCw, SkipForward, X } from "lucide-react";
+import { CalendarDays, Check, ChevronLeft, ChevronRight, Loader2, Play, RefreshCw, SkipForward, X } from "lucide-react";
 import {
   TOP_TASKS_COUNT,
   fetchPlan,
@@ -94,13 +94,13 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
   }, [plan.isSuccess, plan.data, regenerate]);
 
   const mode = dayMode();
-  const [showAll, setShowAll] = useState(false);
+  const [page, setPage] = useState(0);
   const [range, setRange] = useState<"day" | "week" | "month">("day");
   const bounds = range === "week" ? weekRange() : range === "month" ? monthRange() : null;
   const rangeQuery = useQuery({
     queryKey: ["plan-range", bounds?.from, bounds?.to],
     queryFn: () => fetchPlanRange(bounds!.from, bounds!.to),
-    enabled: showAll && !!bounds,
+    enabled: page > 0 && !!bounds,
   });
   const totals = planTotals(rangeQuery.data ?? []);
   const upcoming = (rangeQuery.data ?? [])
@@ -111,14 +111,18 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
   const all = plan.data ?? [];
   const ranked = visiblePlanItems(all);
 
-  const items = showAll ? ranked : ranked.slice(0, TOP_TASKS_COUNT);
-  const hidden = ranked.length - items.length;
+  const items = ranked.slice(page * TOP_TASKS_COUNT, (page + 1) * TOP_TASKS_COUNT);
+  const totalPages = Math.ceil(ranked.length / TOP_TASKS_COUNT);
+  const allRows = ranked.map((item) => {
+    const minutes = planItemMinutes(item, sessions, since);
+    return { item, minutes, status: planItemStatus(item, minutes) };
+  });
   const rows = items.map((item) => {
     const minutes = planItemMinutes(item, sessions, since);
     return { item, minutes, status: planItemStatus(item, minutes) };
   });
-  const doneCount = rows.filter((r) => r.status === "complete").length;
-  const plannedMinutes = items.reduce((a, i) => a + i.target_minutes, 0);
+  const doneCount = allRows.filter((r) => r.status === "complete").length;
+  const plannedMinutes = ranked.reduce((a, i) => a + i.target_minutes, 0);
   const busy = setState.isPending;
 
   return (
@@ -135,8 +139,8 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
               day: "numeric",
               month: "short",
             })}{" "}
-            · {doneCount}/{items.length} done · {fmtHM(plannedMinutes)} planned
-            {hidden > 0 ? ` · ${hidden} more queued` : ""}
+            · {doneCount}/{ranked.length} done · {fmtHM(plannedMinutes)} planned
+            
 
           </p>
         </div>
@@ -262,94 +266,3 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
           })}
         </ul>
       )}
-      {ranked.length > TOP_TASKS_COUNT || showAll ? (
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="mt-4 w-full rounded-2xl border border-border py-2.5 text-sm font-bold text-brand transition-colors hover:bg-secondary"
-        >
-          {showAll ? "See less" : `See more (${Math.max(0, ranked.length - TOP_TASKS_COUNT)} more)`}
-        </button>
-      ) : null}
-
-      {showAll ? (
-        <div className="mt-4 rounded-2xl border border-border p-3">
-          <div className="flex gap-1.5">
-            {(["day", "week", "month"] as const).map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRange(r)}
-                className={`rounded-full px-3 py-1.5 text-xs font-bold capitalize transition ${
-                  range === r ? "bg-foreground text-background" : "border border-border text-muted-foreground"
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-
-          {range === "day" ? (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Week ya month chuno — chapter aur type ke hisaab se planned time aur aane wale revisions dikhenge.
-            </p>
-          ) : rangeQuery.isLoading ? (
-            <p className="mt-3 text-xs text-muted-foreground">Loading…</p>
-          ) : (rangeQuery.data ?? []).length === 0 ? (
-            <p className="mt-3 text-xs text-muted-foreground">Is {range} ke liye abhi koi task nahi hai.</p>
-          ) : (
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-[11px] font-extrabold tracking-wide uppercase text-muted-foreground">By chapter</p>
-                <ul className="mt-2 space-y-1.5">
-                  {totals.chapters.slice(0, 8).map((row) => (
-                    <li key={row.label} className="flex items-center justify-between gap-3 text-xs">
-                      <span className="min-w-0 truncate font-semibold">{row.label}</span>
-                      <span className="shrink-0 text-muted-foreground">{fmtHM(row.minutes)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="text-[11px] font-extrabold tracking-wide uppercase text-muted-foreground">By type</p>
-                <ul className="mt-2 space-y-1.5">
-                  {totals.kinds.map((row) => (
-                    <li key={row.label} className="flex items-center justify-between gap-3 text-xs">
-                      <span className="min-w-0 truncate font-semibold capitalize">
-                        {KIND_LABEL[row.label] ?? row.label}
-                      </span>
-                      <span className="shrink-0 text-muted-foreground">{fmtHM(row.minutes)}</span>
-                    </li>
-                  ))}
-                </ul>
-                {upcoming.length ? (
-                  <>
-                    <p className="mt-3 text-[11px] font-extrabold tracking-wide uppercase text-muted-foreground">
-                      Next revisions
-                    </p>
-                    <ul className="mt-2 space-y-1.5">
-                      {upcoming.map((i) => (
-                        <li key={i.id} className="flex items-center justify-between gap-3 text-xs">
-                          <span className="min-w-0 truncate font-semibold">
-                            {i.chapter_name ?? i.subject_name ?? "Focus block"}
-                          </span>
-                          <span className="shrink-0 text-muted-foreground">
-                            {new Date(i.next_review_at!).toLocaleDateString(undefined, {
-                              day: "numeric",
-                              month: "short",
-                            })}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-    </section>
-  );
-}
