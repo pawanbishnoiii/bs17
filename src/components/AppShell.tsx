@@ -32,6 +32,7 @@ import {
   logEvent,
 } from "@/lib/study";
 import { CinematicThemeSwitcher } from "@/components/ui/cinematic-theme-switcher";
+import { DashboardSidebar, type DashboardNavGroup } from "@/components/ui/dashboard-sidebar";
 import { LiquidMorphFloatingMenu } from "@/components/ui/liquid-morph-floating-menu";
 import { PushPrompt } from "@/components/PushPrompt";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -49,6 +50,29 @@ const NAV = [
   { to: "/targets", label: "Targets", Icon: Target },
   { to: "/history", label: "History", Icon: HistoryIcon },
 ] as const;
+
+/** Desktop sidebar layout for students; admins get one extra entry. */
+const STUDENT_GROUPS = (admin: boolean): DashboardNavGroup[] => [
+  {
+    label: "Study",
+    items: [
+      { to: "/today", label: "Home", icon: LayoutDashboard, exact: true },
+      { to: "/timetable", label: "Timetable", icon: CalendarDays },
+      { to: "/study", label: "Study", icon: Play },
+      { to: "/targets", label: "Targets", icon: Target },
+      { to: "/history", label: "History", icon: HistoryIcon },
+    ],
+  },
+  {
+    label: "Library",
+    items: [
+      { to: "/classes", label: "Classes & files", icon: GraduationCap },
+      { to: "/profile", label: "Profile", icon: UserIcon },
+      { to: "/settings", label: "Settings", icon: SettingsIcon },
+      ...(admin ? [{ to: "/admin", label: "Admin console", icon: ShieldCheck }] : []),
+    ],
+  },
+];
 
 const EIGHT_WEEKS = new Date(Date.now() - 8 * 7 * 864e5).toISOString();
 
@@ -174,28 +198,34 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className={`app-backdrop min-h-screen text-foreground ${hideNav ? "" : "lg:grid lg:grid-cols-[232px_minmax(0,1fr)]"}`}>
+    <div className={`app-backdrop min-h-screen text-foreground ${hideNav ? "" : "lg:flex lg:gap-4 lg:p-4"}`}>
       {!hideNav ? (
-        <aside className="sticky top-0 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-border bg-panel px-4 py-6 lg:flex">
-          <Link to="/today" className="flex items-center gap-3 px-2">
-            <img src={appLogo} alt="Bnoy Study" width={1024} height={1024} className="size-11 rounded-2xl object-contain" />
-            <span><span className="font-heading block text-lg font-extrabold">Bnoy Study</span><span className="text-xs text-muted-foreground">Study OS</span></span>
-          </Link>
-          <nav aria-label="Primary" className="mt-10 grid gap-2">
-            {NAV.map(({ to, label, Icon }) => (
-              <Link key={to} to={to} className={`flex min-h-12 items-center gap-3 rounded-2xl px-4 text-sm font-semibold transition-colors ${pathname === to ? "bg-foreground text-background" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}>
-                <Icon className="size-5" />{label}
-              </Link>
-            ))}
-          </nav>
-          <div className="mt-auto rounded-[24px] bg-lavender-soft p-4">
-            <div className="mb-3 flex items-center justify-between text-xs font-extrabold"><span>Level {level}</span><span className="num">{totalXp} XP</span></div>
-            <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-panel/70"><div className="h-full rounded-full bg-lavender" style={{ width: `${levelPct}%` }} /></div>
-            <p className="text-sm font-bold">Today’s progress</p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-panel"><div className="h-full rounded-full bg-blue" style={{ width: `${todayPct}%` }} /></div>
-            <p className="mt-2 text-xs text-muted-foreground">{todayPct}% of your daily goal</p>
-          </div>
-        </aside>
+        <DashboardSidebar
+          pathname={pathname}
+          groups={STUDENT_GROUPS(!!admin.data)}
+          subtitle="Study OS"
+          searchable
+          ariaLabel="Primary"
+          backTo={null}
+          showMobileTrigger={false}
+          logo={<img src={appLogo} alt="" width={1024} height={1024} className="size-full object-contain" />}
+          footer={
+            <div className="rounded-[20px] bg-lavender-soft p-4">
+              <div className="mb-3 flex items-center justify-between text-xs font-extrabold">
+                <span>Level {level}</span>
+                <span className="num">{totalXp} XP</span>
+              </div>
+              <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-panel/70">
+                <div className="h-full rounded-full bg-lavender" style={{ width: `${levelPct}%` }} />
+              </div>
+              <p className="text-sm font-bold">Today’s progress</p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-panel">
+                <div className="h-full rounded-full bg-blue" style={{ width: `${todayPct}%` }} />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">{todayPct}% of your daily goal</p>
+            </div>
+          }
+        />
       ) : null}
       <OfflineStatus />
       <div className="flex min-h-screen min-w-0 flex-col">

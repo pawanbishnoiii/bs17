@@ -362,7 +362,7 @@ export async function deleteMedia(item: LibraryMedia) {
   if (error) throw error;
 }
 
-/** A временный signed link for private files (30 minutes). */
+/** A temporary signed link for private files (30 minutes). */
 export async function mediaUrl(item: LibraryMedia) {
   if (item.external_url) return item.external_url;
   if (!item.storage_path) throw new Error("Is item ka koi file nahi hai");
