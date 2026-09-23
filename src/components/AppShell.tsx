@@ -50,6 +50,29 @@ const NAV = [
   { to: "/history", label: "History", Icon: HistoryIcon },
 ] as const;
 
+/** Desktop sidebar layout for students; admins get one extra entry. */
+const STUDENT_GROUPS = (admin: boolean): DashboardNavGroup[] => [
+  {
+    label: "Study",
+    items: [
+      { to: "/today", label: "Home", icon: LayoutDashboard, exact: true },
+      { to: "/timetable", label: "Timetable", icon: CalendarDays },
+      { to: "/study", label: "Study", icon: Play },
+      { to: "/targets", label: "Targets", icon: Target },
+      { to: "/history", label: "History", icon: HistoryIcon },
+    ],
+  },
+  {
+    label: "Library",
+    items: [
+      { to: "/classes", label: "Classes & files", icon: GraduationCap },
+      { to: "/profile", label: "Profile", icon: UserIcon },
+      { to: "/settings", label: "Settings", icon: SettingsIcon },
+      ...(admin ? [{ to: "/admin", label: "Admin console", icon: ShieldCheck }] : []),
+    ],
+  },
+];
+
 const EIGHT_WEEKS = new Date(Date.now() - 8 * 7 * 864e5).toISOString();
 
 export function AppShell({ children }: { children: ReactNode }) {
