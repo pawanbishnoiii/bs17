@@ -19,3 +19,9 @@
 - SMTP settings: make fully manageable and testable from admin.
 - README rewrite.
 - Shopping carts (item 8) — scope unclear for a study app; needs the user's intent.
+
+## Current
+- [ ] Paginate Your plan in balanced groups of 8 with Previous/Next.
+- [ ] Verify and complete 1/3/7/15/30, Sunday revision, and weekly syllabus scheduling.
+- [ ] Refresh global background and vibrant multicolor clay typography.
+- [ ] Reorganize and verify the Classes page on phone and desktop.

@@ -229,6 +229,22 @@
   box-shadow: var(--shadow-card);
 }
 
+@utility clay-card-vibrant {
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: var(--panel);
+  box-shadow: 
+    inset 0 1px 0 color-mix(in oklab, white 60%, transparent),
+    0 14px 28px -18px color-mix(in oklab, var(--foreground) 15%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      inset 0 1px 0 color-mix(in oklab, white 60%, transparent),
+      0 20px 32px -20px color-mix(in oklab, var(--foreground) 20%, transparent);
+  }
+}
+
 @utility section-label {
   color: var(--muted-foreground);
   font-size: 0.75rem;
