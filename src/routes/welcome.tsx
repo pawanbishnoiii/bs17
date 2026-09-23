@@ -109,7 +109,7 @@ function WelcomePage() {
   );
 
   return (
-    <div ref={root} className="min-h-screen bg-background text-foreground">
+    <div ref={root} className="min-h-screen bg-background/40 text-foreground">
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 px-4 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between">
           <a href="#top" className="flex items-center gap-2.5 font-bold">
