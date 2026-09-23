@@ -38,6 +38,7 @@ import { Route as AuthenticatedAdminScheduleRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as ApiPublicCronRouteImport } from './routes/api/public/cron'
+import { Route as ApiPublicCronEmailQueueRouteImport } from './routes/api/public/cron/email-queue'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -190,6 +191,11 @@ const ApiPublicCronRoute = ApiPublicCronRouteImport.update({
   path: '/api/public/cron',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronEmailQueueRoute = ApiPublicCronEmailQueueRouteImport.update({
+  id: '/email-queue',
+  path: '/email-queue',
+  getParentRoute: () => ApiPublicCronRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -218,8 +224,9 @@ export interface FileRoutesByFullPath {
   '/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/cron': typeof ApiPublicCronRoute
+  '/api/public/cron': typeof ApiPublicCronRouteWithChildren
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/email-queue': typeof ApiPublicCronEmailQueueRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -247,8 +254,9 @@ export interface FileRoutesByTo {
   '/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/cron': typeof ApiPublicCronRoute
+  '/api/public/cron': typeof ApiPublicCronRouteWithChildren
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/email-queue': typeof ApiPublicCronEmailQueueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -279,8 +287,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/cron': typeof ApiPublicCronRoute
+  '/api/public/cron': typeof ApiPublicCronRouteWithChildren
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/email-queue': typeof ApiPublicCronEmailQueueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/public/cron'
     | '/admin/'
+    | '/api/public/cron/email-queue'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/public/cron'
     | '/admin'
+    | '/api/public/cron/email-queue'
   id:
     | '__root__'
     | '/'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/api/public/cron'
     | '/_authenticated/admin/'
+    | '/api/public/cron/email-queue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -382,7 +394,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   WelcomeRoute: typeof WelcomeRoute
   Char126oauthInitiateRoute: typeof Char126oauthInitiateRoute
-  ApiPublicCronRoute: typeof ApiPublicCronRoute
+  ApiPublicCronRoute: typeof ApiPublicCronRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -590,6 +602,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/email-queue': {
+      id: '/api/public/cron/email-queue'
+      path: '/email-queue'
+      fullPath: '/api/public/cron/email-queue'
+      preLoaderRoute: typeof ApiPublicCronEmailQueueRouteImport
+      parentRoute: typeof ApiPublicCronRoute
+    }
   }
 }
 
@@ -666,6 +685,18 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface ApiPublicCronRouteChildren {
+  ApiPublicCronEmailQueueRoute: typeof ApiPublicCronEmailQueueRoute
+}
+
+const ApiPublicCronRouteChildren: ApiPublicCronRouteChildren = {
+  ApiPublicCronEmailQueueRoute: ApiPublicCronEmailQueueRoute,
+}
+
+const ApiPublicCronRouteWithChildren = ApiPublicCronRoute._addFileChildren(
+  ApiPublicCronRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -673,7 +704,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   WelcomeRoute: WelcomeRoute,
   Char126oauthInitiateRoute: Char126oauthInitiateRoute,
-  ApiPublicCronRoute: ApiPublicCronRoute,
+  ApiPublicCronRoute: ApiPublicCronRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
