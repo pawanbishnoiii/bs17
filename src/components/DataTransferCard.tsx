@@ -47,7 +47,7 @@ export function DataTransferCard() {
 
 
   const pick = async (file: File) => {
-    setBusy("File padhi ja rahi hai…");
+    step("File padhi ja rahi hai…", 20);
     try {
       const next = await readImportZip(file);
       setPreview(next);
@@ -61,13 +61,18 @@ export function DataTransferCard() {
       toast.error((e as Error).message);
     } finally {
       setBusy(null);
+      setPct(0);
     }
   };
 
   const confirmImport = async () => {
     if (!preview) return;
     try {
-      const result = await applyImport(preview, (label) => setBusy(`Importing ${label}…`), importPick);
+      const result = await applyImport(
+        preview,
+        (label, percent) => step(`Importing ${label}…`, percent),
+        importPick,
+      );
       if (result.failures.length) toast.warning(`Import hua, lekin ${result.failures.length} items skip hue`);
       else
         toast.success(
@@ -79,8 +84,10 @@ export function DataTransferCard() {
       toast.error((e as Error).message);
     } finally {
       setBusy(null);
+      setPct(0);
     }
   };
+
 
   const toggle = (which: "export" | "import", id: keyof Selection) => {
     const set = which === "export" ? setExportPick : setImportPick;
