@@ -99,6 +99,15 @@ function StudySetupPage() {
   });
   const [subjectSheet, setSubjectSheet] = useState(false);
   const [subjectSearch, setSubjectSearch] = useState("");
+  const [chapterId, setChapterId] = useState("");
+  const [subtopicId, setSubtopicId] = useState("");
+  const [chapterSheet, setChapterSheet] = useState(false);
+  const [chapterDraft, setChapterDraft] = useState("");
+  const [typeSheet, setTypeSheet] = useState(false);
+  const [typeChapterId, setTypeChapterId] = useState("");
+  const [typeDraft, setTypeDraft] = useState("");
+  const [editChapter, setEditChapter] = useState<{ id: string; name: string; position: number } | null>(null);
+  const [editSubtopic, setEditSubtopic] = useState<{ id: string; name: string; position: number } | null>(null);
 
   const running = useQuery({ queryKey: ["running"], queryFn: fetchRunningSession });
   const subjects = useQuery({ queryKey: ["subjects"], queryFn: fetchSubjects });
