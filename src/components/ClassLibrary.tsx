@@ -351,7 +351,7 @@ export function ClassLibrary() {
         </>
       )}
 
-      <ResponsiveSheet open={newFolder} onOpenChange={setNewFolder} title="New folder">
+      <ResponsiveSheet open={newFolder} onClose={() => setNewFolder(false)} title="New folder">
         <div className="grid gap-3 p-1">
           <input
             value={folderName}
@@ -365,7 +365,7 @@ export function ClassLibrary() {
         </div>
       </ResponsiveSheet>
 
-      <ResponsiveSheet open={linkOpen} onOpenChange={setLinkOpen} title="Add media link">
+      <ResponsiveSheet open={linkOpen} onClose={() => setLinkOpen(false)} title="Add media link">
         <div className="grid gap-3 p-1">
           <input
             value={link.url}
