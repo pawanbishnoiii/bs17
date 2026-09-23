@@ -126,6 +126,11 @@ export async function syncSystemFolders() {
 
   const bySubject = new Map(existing.filter((f) => f.kind === "subject").map((f) => [f.subject_id, f]));
   const byChapter = new Map(existing.filter((f) => f.kind === "chapter").map((f) => [f.chapter_id, f]));
+  const byType = new Set(
+    existing
+      .filter((f) => f.kind === "type")
+      .map((f) => `${f.chapter_id}:${f.name.replace(/^\d+\.\s*/, "").toLowerCase()}`),
+  );
 
   for (const [index, subject] of subjects.entries()) {
     let subjectFolder = bySubject.get(subject.id) ?? null;
