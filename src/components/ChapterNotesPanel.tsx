@@ -110,7 +110,7 @@ export function ChapterNotesPanel() {
   };
 
   return (
-    <section className="surface-card p-5">
+    <section className="clay-card-vibrant p-5">
       <div className="flex items-center gap-3">
         <span className="grid size-10 place-items-center rounded-2xl bg-[var(--mint-soft,#dff5ea)]">
           <FileText className="size-5" aria-hidden="true" />
@@ -212,7 +212,7 @@ export function ChapterNotesPanel() {
       ) : (
         <div className="mt-5 space-y-4">
           {groups.map((group) => (
-            <div key={group.key} className="rounded-2xl border border-border bg-panel p-3">
+            <div key={group.key} className="rounded-2xl border border-border/50 bg-panel/80 backdrop-blur-sm p-3.5 shadow-sm">
               <p className="text-sm font-extrabold">{group.chapter_name ?? "General"}</p>
               <p className="text-[11px] font-semibold text-muted-foreground">
                 {subjectName(group.subject_id)} · {group.notes.length} files

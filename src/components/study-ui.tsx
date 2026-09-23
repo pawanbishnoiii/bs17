@@ -162,8 +162,9 @@ export function ResponsiveSheet({
             exit={{ y: 40, opacity: 0 }}
             transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
             onClick={(event) => event.stopPropagation()}
-            className="max-h-[92svh] w-full overflow-y-auto rounded-t-[32px] bg-panel p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl sm:h-full sm:max-h-none sm:max-w-lg sm:rounded-[32px] sm:p-7"
+            className="max-h-[92svh] w-full overflow-y-auto rounded-t-[32px] bg-panel border-t border-white/40 p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl sm:h-full sm:max-h-none sm:max-w-lg sm:rounded-[32px] sm:p-7"
           >
+<div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted/30 sm:hidden" />
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 id="responsive-sheet-title" className="text-2xl font-bold">{title}</h2>

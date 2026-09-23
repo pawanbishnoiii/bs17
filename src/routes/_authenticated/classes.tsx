@@ -139,20 +139,20 @@ function ClassesPage() {
         title="Online classes"
         description="Mark a class complete and its notes go into the revision ladder."
         action={
-          <Button onClick={() => setOpen(true)} className="gap-2">
+          <Button onClick={() => setOpen(true)} className="btn-pop gap-2">
             <Plus className="size-4" /> Add class
           </Button>
         }
       />
 
       <div className="grid gap-5 lg:grid-cols-2">
-      <section className="surface-card p-5">
+      <section className="clay-card-vibrant p-5">
         <div className="flex items-center gap-3">
           <span className="grid size-10 place-items-center rounded-2xl bg-[var(--lavender-soft)]">
             <RotateCcw className="size-5" aria-hidden="true" />
           </span>
           <div>
-            <h2 className="text-base font-extrabold tracking-tight">Class notes revision</h2>
+            <h2 className="text-lg font-extrabold tracking-tight clay-gradient-text">Class notes revision</h2>
             <p className="text-[11px] text-muted-foreground">
               Each set of notes gets 4–8 spaced passes. Due ones also appear in your daily plan.
             </p>
@@ -170,7 +170,7 @@ function ClassesPage() {
               return (
                 <li
                   key={r.id}
-                  className="flex items-center gap-3 rounded-2xl border border-border bg-panel p-3"
+                  className="flex items-center gap-3 rounded-2xl border border-border/50 bg-panel/80 backdrop-blur-sm p-3.5 shadow-sm"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-bold">
@@ -199,8 +199,8 @@ function ClassesPage() {
       </section>
 
       {/* Class list */}
-      <section className="surface-card p-5">
-        <h2 className="text-base font-extrabold tracking-tight">Your classes</h2>
+      <section className="clay-card-vibrant p-5">
+        <h2 className="text-lg font-extrabold tracking-tight clay-gradient-text">Your classes</h2>
         {classes.isLoading ? (
           <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
         ) : rows.length === 0 ? (
@@ -223,7 +223,7 @@ function ClassesPage() {
             {rows.map((c) => (
               <li
                 key={c.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-panel p-3"
+                className="flex items-center gap-3 rounded-2xl border border-border/50 bg-panel/80 backdrop-blur-sm p-3.5 shadow-sm"
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[var(--sky-soft,#e4efff)]">
                   {c.mode === "live" ? (
@@ -244,9 +244,9 @@ function ClassesPage() {
                   type="button"
                   aria-label={c.status === "completed" ? "Mark as not completed" : "Mark as completed"}
                   onClick={() => complete.mutate({ id: c.id, done: c.status !== "completed" })}
-                  className={`grid size-9 shrink-0 place-items-center rounded-full border transition ${
+                  className={`grid size-10 shrink-0 place-items-center rounded-full border transition ${
                     c.status === "completed"
-                      ? "border-transparent bg-foreground text-background"
+                      ? "border-transparent bg-brand text-brand-foreground shadow-[0_4px_12px_-4px_var(--brand)]"
                       : "border-border text-muted-foreground"
                   }`}
                 >
@@ -256,7 +256,7 @@ function ClassesPage() {
                   type="button"
                   aria-label="Delete class"
                   onClick={() => remove.mutate(c.id)}
-                  className="grid size-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground hover:text-destructive"
+                  className="grid size-10 shrink-0 place-items-center rounded-full border border-border text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 className="size-4" aria-hidden="true" />
                 </button>

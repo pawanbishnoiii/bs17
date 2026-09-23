@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session, Subject } from "@/lib/study";
 
 /** How many plan tasks are shown on the board at once. */
-export const TOP_TASKS_COUNT = 5;
+export const TOP_TASKS_COUNT = 8;
 
 /** One row of the automatic daily study plan. */
 export type PlanItem = {

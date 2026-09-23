@@ -210,7 +210,7 @@ export function ClassLibrary() {
   }
 
   return (
-    <section className="surface-card p-5">
+    <section className="clay-card-vibrant p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-base font-extrabold tracking-tight">Study library</h2>
@@ -288,7 +288,7 @@ export function ClassLibrary() {
       ) : (
         <>
           {children.length ? (
-            <div className="mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="mt-6 grid grid-cols-2 gap-4 min-[380px]:gap-5 sm:grid-cols-3 lg:grid-cols-4">
               {children.map((folder, index) => (
                 <div key={folder.id} className="relative">
                   <Folder3D
