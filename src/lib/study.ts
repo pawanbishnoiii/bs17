@@ -203,6 +203,127 @@ export async function deleteSubject(id: string) {
   if (error) throw error;
 }
 
+/* ---------------- chapters & subtopics (the "syllabus" table under a subject) ---------------- */
+
+export type ChapterRow = {
+  id: string;
+  subject_id: string;
+  name: string;
+  position: number;
+  estimated_minutes: number | null;
+};
+
+export type ChapterSubtopicRow = {
+  id: string;
+  chapter_id: string;
+  name: string;
+  position: number;
+  estimated_minutes: number | null;
+  first_pass_done: boolean;
+};
+
+/** All chapters of one subject, ordered for display and easy re-numbering. */
+export async function fetchChapters(subject_id: string): Promise<ChapterRow[]> {
+  const user_id = await uid();
+  const { data, error } = await supabase
+    .from("chapters")
+    .select("id,subject_id,name,position,estimated_minutes")
+    .eq("user_id", user_id)
+    .eq("subject_id", subject_id)
+    .order("position", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    subject_id: row.subject_id,
+    name: row.name,
+    position: row.position ?? 0,
+    estimated_minutes: row.estimated_minutes ?? null,
+  }));
+}
+
+/** Add one or several chapters to a subject in one go, auto-numbered after the existing ones. */
+export async function addChapters(subject_id: string, names: string[]) {
+  const clean = normaliseChapters(names);
+  if (clean.length === 0) return;
+  const user_id = await uid();
+  const existing = await fetchChapters(subject_id);
+  let next = existing.reduce((max, c) => Math.max(max, c.position), 0) + 1;
+  const rows = clean.map((name) => ({
+    user_id,
+    subject_id,
+    name,
+    position: next++,
+  }));
+  const { error } = await supabase.from("chapters").insert(rows as any);
+  if (error) throw error;
+}
+
+export async function renameChapter(id: string, name: string) {
+  const clean = name.trim().replace(/\s+/g, " ").slice(0, 120);
+  if (!clean) throw new Error("Chapter name can't be empty.");
+  const { error } = await supabase.from("chapters").update({ name: clean } as any).eq("id", id);
+  if (error) throw error;
+}
+
+export async function renumberChapter(id: string, position: number) {
+  if (!Number.isFinite(position) || position < 1) throw new Error("Number must be 1 or more.");
+  const { error } = await supabase.from("chapters").update({ position } as any).eq("id", id);
+  if (error) throw error;
+}
+
+/** Types/subtopics under one chapter — auto-numbered series shown as "1. Sources". */
+export async function fetchChapterSubtopics(chapter_id: string): Promise<ChapterSubtopicRow[]> {
+  const user_id = await uid();
+  const { data, error } = await supabase
+    .from("chapter_subtopics")
+    .select("id,chapter_id,name,position,estimated_minutes,first_pass_done")
+    .eq("user_id", user_id)
+    .eq("chapter_id", chapter_id)
+    .order("position", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    chapter_id: row.chapter_id,
+    name: row.name,
+    position: row.position ?? 0,
+    estimated_minutes: row.estimated_minutes ?? null,
+    first_pass_done: !!row.first_pass_done,
+  }));
+}
+
+/** Add one or several types to a chapter, continuing the numbered series from what's already there. */
+export async function addChapterSubtopics(chapter_id: string, names: string[]) {
+  const clean = normaliseChapters(names);
+  if (clean.length === 0) return;
+  const user_id = await uid();
+  const existing = await fetchChapterSubtopics(chapter_id);
+  let next = existing.reduce((max, s) => Math.max(max, s.position), 0) + 1;
+  const rows = clean.map((name) => ({
+    user_id,
+    chapter_id,
+    name,
+    position: next++,
+  }));
+  const { error } = await supabase.from("chapter_subtopics").insert(rows as any);
+  if (error) throw error;
+}
+
+export async function renameChapterSubtopic(id: string, name: string) {
+  const clean = name.trim().replace(/\s+/g, " ").slice(0, 120);
+  if (!clean) throw new Error("Type name can't be empty.");
+  const { error } = await supabase.from("chapter_subtopics").update({ name: clean } as any).eq("id", id);
+  if (error) throw error;
+}
+
+export async function renumberChapterSubtopic(id: string, position: number) {
+  if (!Number.isFinite(position) || position < 1) throw new Error("Number must be 1 or more.");
+  const { error } = await supabase.from("chapter_subtopics").update({ position } as any).eq("id", id);
+  if (error) throw error;
+}
+
+
 export async function fetchRunningSession(): Promise<Session | null> {
   const user_id = await uid();
   const { data, error } = await supabase
