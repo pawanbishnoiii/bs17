@@ -55,7 +55,7 @@ export function Folder3D({
         />
         {/* back panel */}
         <span
-          className="absolute inset-x-0 top-6 bottom-0 rounded-2xl shadow-sm"
+          className="absolute inset-x-0 top-6 bottom-0 rounded-2xl shadow-md"
           style={{ background: back }}
         />
 
@@ -91,7 +91,7 @@ export function Folder3D({
 
         {/* front flap */}
         <span
-          className="absolute inset-x-0 bottom-0 z-20 h-24 rounded-2xl border-t border-white/40 shadow-lg transition-transform duration-500 ease-out"
+          className="absolute inset-x-0 bottom-0 z-20 h-24 rounded-2xl border border-white/50 shadow-lg backdrop-blur-[2px] transition-transform duration-500 ease-out"
           style={{
             background: front,
             transform: active ? "rotateX(-26deg)" : "rotateX(0deg)",

@@ -45,7 +45,7 @@ export function ClassFolders() {
   const refresh = () => void qc.invalidateQueries({ queryKey: ["chapter-notes"] });
 
   return (
-    <section className="surface-card p-5">
+    <section className="clay-card-vibrant p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-base font-extrabold tracking-tight">Class folders</h2>
@@ -65,7 +65,7 @@ export function ClassFolders() {
           Abhi koi folder nahi. "New folder" se subject aur chapter chunkar pehli file upload karein.
         </p>
       ) : (
-        <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-4 min-[380px]:gap-5 sm:grid-cols-3 lg:grid-cols-4">
           {folders.map((folder, i) => (
             <Folder3D
               key={folder.key}
