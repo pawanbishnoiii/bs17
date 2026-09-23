@@ -459,6 +459,152 @@ export type Database = {
           },
         ]
       }
+      class_folders: {
+        Row: {
+          chapter_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          parent_id: string | null
+          position: number
+          subject_id: string | null
+          system_managed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          name: string
+          parent_id?: string | null
+          position?: number
+          subject_id?: string | null
+          system_managed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          chapter_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          parent_id?: string | null
+          position?: number
+          subject_id?: string | null
+          system_managed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_folders_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "class_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_folders_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_media: {
+        Row: {
+          chapter_id: string | null
+          created_at: string
+          duration_seconds: number | null
+          external_url: string | null
+          file_size: number | null
+          folder_id: string | null
+          id: string
+          media_kind: string
+          mime_type: string | null
+          position: number
+          source: string
+          storage_path: string | null
+          subject_id: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_id?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          external_url?: string | null
+          file_size?: number | null
+          folder_id?: string | null
+          id?: string
+          media_kind?: string
+          mime_type?: string | null
+          position?: number
+          source?: string
+          storage_path?: string | null
+          subject_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          chapter_id?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          external_url?: string | null
+          file_size?: number | null
+          folder_id?: string | null
+          id?: string
+          media_kind?: string
+          mime_type?: string | null
+          position?: number
+          source?: string
+          storage_path?: string | null
+          subject_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_media_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_media_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "class_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_media_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_note_revision_state: {
         Row: {
           chapter_id: string | null
@@ -724,6 +870,51 @@ export type Database = {
           smtp_port?: number | null
           smtp_user?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      error_events: {
+        Row: {
+          category: string
+          context: string | null
+          created_at: string
+          detail: Json
+          id: string
+          message: string
+          resolution_note: string | null
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          context?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          message: string
+          resolution_note?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          context?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          message?: string
+          resolution_note?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1336,6 +1527,39 @@ export type Database = {
           },
         ]
       }
+      streak_days: {
+        Row: {
+          created_at: string
+          day: string
+          goal_met: boolean
+          id: string
+          lifeline_used: boolean
+          percent: number
+          streak_after: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          goal_met?: boolean
+          id?: string
+          lifeline_used?: boolean
+          percent?: number
+          streak_after?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          goal_met?: boolean
+          id?: string
+          lifeline_used?: boolean
+          percent?: number
+          streak_after?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           auto_closed: boolean | null
@@ -1887,6 +2111,7 @@ export type Database = {
           gender_palette_suggested: boolean | null
           min_count_minutes: number
           percent_per_hour: Json
+          target_mode: string
           theme_mode: string | null
           timer_background_effects: boolean | null
           timer_keep_awake: boolean | null
@@ -1912,6 +2137,7 @@ export type Database = {
           gender_palette_suggested?: boolean | null
           min_count_minutes?: number
           percent_per_hour?: Json
+          target_mode?: string
           theme_mode?: string | null
           timer_background_effects?: boolean | null
           timer_keep_awake?: boolean | null
@@ -1937,6 +2163,7 @@ export type Database = {
           gender_palette_suggested?: boolean | null
           min_count_minutes?: number
           percent_per_hour?: Json
+          target_mode?: string
           theme_mode?: string | null
           timer_background_effects?: boolean | null
           timer_keep_awake?: boolean | null

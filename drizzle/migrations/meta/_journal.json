@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790132522499,
+      "tag": "0000_storage_policies_folders_error_monitor",
+      "breakpoints": true
+    }
+  ]
+}
