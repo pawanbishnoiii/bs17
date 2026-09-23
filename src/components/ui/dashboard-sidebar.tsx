@@ -107,7 +107,7 @@ function SidebarBody({
         </label>
       ) : null}
 
-      <nav aria-label={ariaLabel ?? "Sidebar"} className="mt-4 flex-1 space-y-5 overflow-y-auto">
+      <nav aria-label={ariaLabel ?? "Sidebar"} className="mt-4 min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain">
         {visible.map((group) => (
           <div key={group.label}>
             {!collapsed && group.label ? (
@@ -189,7 +189,7 @@ export function DashboardSidebar(props: DashboardSidebarProps) {
     <>
       <aside
         className={cn(
-          "sticky top-4 hidden h-[calc(100svh-2rem)] shrink-0 overflow-hidden rounded-2xl border border-border shadow-sm transition-[width] duration-300 lg:block",
+          "sticky top-4 hidden h-[calc(100svh-2rem)] shrink-0 self-start overflow-hidden rounded-2xl border border-border shadow-sm transition-[width] duration-300 lg:block",
           collapsed ? "w-16" : "w-64",
           className,
         )}

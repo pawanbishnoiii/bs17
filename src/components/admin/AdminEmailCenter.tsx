@@ -89,14 +89,16 @@ function SettingsTab() {
           reply_to: row["reply_to"] || null,
           timeout_seconds: Number(row["timeout_seconds"]) || 20,
           verify_ssl: row["verify_ssl"] !== false,
+          smtp_auth: row["smtp_auth"] !== false,
         } as never,
       });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setSecret("");
       setApiKey("");
+      await qc.invalidateQueries({ queryKey: ["email-config"] });
+      setForm(null);
       toast.success("Email settings saved");
-      qc.invalidateQueries({ queryKey: ["email-config"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -193,12 +195,15 @@ function SettingsTab() {
             </div>
             <div>
               <Label>Encryption</Label>
-              <select className={FIELD} value={row["encryption"] ?? "starttls"} onChange={(e) => set({ encryption: e.target.value })}>
+              <select className={FIELD} value={row["encryption"] === "tls" ? "ssl" : row["encryption"] ?? "starttls"} onChange={(e) => set({ encryption: e.target.value })}>
                 <option value="starttls">STARTTLS (587)</option>
                 <option value="ssl">SSL / TLS (465)</option>
-                <option value="tls">TLS (implicit, 465)</option>
                 <option value="none">None</option>
               </select>
+            </div>
+            <div className="flex items-end gap-2">
+              <Switch checked={row["smtp_auth"] !== false} onCheckedChange={(v) => set({ smtp_auth: v })} />
+              <span className="pb-2 text-sm">Authentication required: {row["smtp_auth"] !== false ? "Yes" : "No"}</span>
             </div>
             <div>
               <Label>Username</Label>

@@ -536,13 +536,16 @@ body.dark {
 @utility app-backdrop {
   position: relative;
   background-color: var(--background);
-  background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px);
-  background-size: 44px 44px;
-  /* `fixed` forces a full-viewport repaint on every scroll frame (very janky on
-     mobile). Scrolling with the content is visually identical here and cheap. */
-  background-attachment: scroll, scroll, scroll;
+  background-image: var(--app-bg-mobile, url("/__l5e/assets-v1/cec1c937-a95b-42d7-b526-642821c969f3/bg-mobile.png"));
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+@media (min-width: 1024px) {
+  .app-backdrop {
+    background-image: var(--app-bg-desktop, url("/__l5e/assets-v1/94b13068-037f-4aac-b941-2580a7a04114/bg-desktop.png"));
+    background-attachment: fixed;
+  }
 }
 
 :root[data-background="clean"] .app-backdrop { background-image: none; }

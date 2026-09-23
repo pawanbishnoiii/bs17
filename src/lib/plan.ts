@@ -335,3 +335,29 @@ export function planTotals(items: PlanItem[]) {
     [...m.entries()].sort((a, b) => b[1] - a[1]).map(([label, minutes]) => ({ label, minutes }));
   return { chapters: sort(chapters), kinds: sort(kinds) };
 }
+
+/**
+ * Builds every remaining day of this week at once (today onward, past days are
+ * kept as history) so the student can see and pick from the full week.
+ */
+export async function generateWeekPlan(d = new Date()) {
+  const start = new Date(d);
+  start.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  const today = localDateKey(d);
+  const days: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(start);
+    day.setDate(start.getDate() + i);
+    const key = localDateKey(day);
+    if (key >= today) days.push(key);
+  }
+  const { data } = await supabase
+    .from("daily_study_plan_items")
+    .select("plan_date")
+    .in("plan_date", days);
+  const built = new Set((data ?? []).map((r) => r.plan_date));
+  for (const key of days) {
+    if (built.has(key)) continue;
+    await supabase.rpc("refresh_my_study_plan", { p_plan_date: key });
+  }
+}

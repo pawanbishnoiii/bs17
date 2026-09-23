@@ -2,7 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { logErrorEvent } from "@/lib/error-log";
 import { fetchChapterSubtopics, fetchChapters, fetchSubjects } from "@/lib/study";
 
-export const LIBRARY_BUCKET = "class-media";
+export const LIBRARY_BUCKET = "data";
+const LEGACY_BUCKET = "class-media";
 export const MAX_MEDIA_BYTES = 200 * 1024 * 1024;
 
 /** A folder in the study library: subject > chapter > type, plus custom ones. */
@@ -121,6 +122,11 @@ export async function fetchMedia(): Promise<LibraryMedia[]> {
  * deleted by hand.
  */
 export async function syncSystemFolders() {
+  const { error } = await supabase.rpc("sync_my_class_folders" as never);
+  if (error) throw error;
+}
+
+export async function legacySyncSystemFolders() {
   const user = await uid();
   const [subjects, existing] = await Promise.all([fetchSubjects(), fetchFolders()]);
 
@@ -242,7 +248,7 @@ export async function uploadMedia(input: {
 
   const user = await uid();
   const safe = input.file.name.replace(/[^\w.\-]+/g, "_");
-  const path = `${user}/${crypto.randomUUID()}-${safe}`;
+  const path = `media/${user}/${input.folder_id ?? "root"}/${crypto.randomUUID()}-${safe}`;
   const mime = input.file.type || "application/octet-stream";
   const baseUrl = import.meta.env["VITE_SUPABASE_URL"];
   const apikey = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? "";
@@ -355,7 +361,7 @@ export async function moveMedia(id: string, folder_id: string | null) {
 
 export async function deleteMedia(item: LibraryMedia) {
   if (item.storage_path) {
-    const removed = await supabase.storage.from(LIBRARY_BUCKET).remove([item.storage_path]);
+    const removed = await supabase.storage.from(bucketFor(item.storage_path)).remove([item.storage_path]);
     if (removed.error) throw new Error(`Storage se delete nahi hui: ${removed.error.message}`);
   }
   const { error } = await supabase.from("class_media").delete().eq("id", item.id);
@@ -367,7 +373,7 @@ export async function mediaUrl(item: LibraryMedia) {
   if (item.external_url) return item.external_url;
   if (!item.storage_path) throw new Error("Is item ka koi file nahi hai");
   const { data, error } = await supabase.storage
-    .from(LIBRARY_BUCKET)
+    .from(bucketFor(item.storage_path))
     .createSignedUrl(item.storage_path, 60 * 30);
   if (error || !data) throw new Error(error?.message ?? "Link nahi bana");
   return data.signedUrl;
@@ -381,4 +387,9 @@ export async function downloadMedia(item: LibraryMedia) {
   a.target = "_blank";
   a.rel = "noreferrer";
   a.click();
+}
+
+/** New uploads live under data/media/<user>/…; older ones stay in the legacy bucket. */
+function bucketFor(path: string) {
+  return path.startsWith("media/") ? LIBRARY_BUCKET : LEGACY_BUCKET;
 }

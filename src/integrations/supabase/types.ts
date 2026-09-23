@@ -1061,6 +1061,7 @@ export type Database = {
           last_verified_at: string | null
           provider: string | null
           reply_to: string | null
+          smtp_auth: boolean
           smtp_host: string | null
           smtp_password: string | null
           smtp_port: number | null
@@ -1080,6 +1081,7 @@ export type Database = {
           last_verified_at?: string | null
           provider?: string | null
           reply_to?: string | null
+          smtp_auth?: boolean
           smtp_host?: string | null
           smtp_password?: string | null
           smtp_port?: number | null
@@ -1099,6 +1101,7 @@ export type Database = {
           last_verified_at?: string | null
           provider?: string | null
           reply_to?: string | null
+          smtp_auth?: boolean
           smtp_host?: string | null
           smtp_password?: string | null
           smtp_port?: number | null
@@ -2591,6 +2594,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      rebuild_my_streak_history: { Args: never; Returns: number }
       refresh_all_daily_plans: {
         Args: { p_plan_date?: string }
         Returns: number
@@ -2609,6 +2613,8 @@ export type Database = {
         Returns: number
       }
       snapshot_streak_day: { Args: { p_day?: string }; Returns: number }
+      sync_my_class_folders: { Args: never; Returns: number }
+      sync_user_class_folders: { Args: { p_user: string }; Returns: number }
       touch_last_seen: { Args: never; Returns: undefined }
       undo_reading: { Args: { _kind: string }; Returns: undefined }
     }

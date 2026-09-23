@@ -116,6 +116,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     setMenu(false);
   }, [pathname]);
 
+  // Once a day, rebuild streak history from past sessions so it is always saved.
+  useEffect(() => {
+    const key = `streak-rebuild-${new Date().toDateString()}`;
+    if (localStorage.getItem(key)) return;
+    void supabase.rpc("rebuild_my_streak_history" as never).then(({ error }) => {
+      if (!error) localStorage.setItem(key, "1");
+    });
+  }, []);
+
   // Presence heartbeat + lightweight page-view telemetry for the admin console.
   useEffect(() => {
     void touchLastSeen().catch(() => {});
