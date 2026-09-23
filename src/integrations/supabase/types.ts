@@ -901,6 +901,27 @@ export type Database = {
         }
         Relationships: []
       }
+      oauth_settings: {
+        Row: {
+          google_client_id: string | null
+          google_client_secret: string | null
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          google_client_id?: string | null
+          google_client_secret?: string | null
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          google_client_id?: string | null
+          google_client_secret?: string | null
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       online_classes: {
         Row: {
           chapter_id: string | null
