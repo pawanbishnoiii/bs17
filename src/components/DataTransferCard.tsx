@@ -20,26 +20,34 @@ export function DataTransferCard() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [pct, setPct] = useState(0);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [mode, setMode] = useState<TransferMode>("full");
   const [exportPick, setExportPick] = useState<Selection>(allSections());
   const [importPick, setImportPick] = useState<Selection>(allSections());
 
+  const step = (label: string, percent: number) => {
+    setBusy(label);
+    setPct(percent);
+  };
+
   const exportAll = async () => {
-    setBusy("Export ban raha hai…");
+    step("Export ban raha hai…", 2);
     try {
-      const { blob, summary } = await buildExportZip(mode, exportPick);
+      const { blob, summary } = await buildExportZip(mode, exportPick, step);
       saveBlob(`bnoy-study-${mode}-${new Date().toISOString().slice(0, 10)}.zip`, blob);
       toast.success(`Export ready — ${summary.subjects} subjects, ${summary.sessions} sessions, ${summary.notes} files`);
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
       setBusy(null);
+      setPct(0);
     }
   };
 
+
   const pick = async (file: File) => {
-    setBusy("File padhi ja rahi hai…");
+    step("File padhi ja rahi hai…", 20);
     try {
       const next = await readImportZip(file);
       setPreview(next);
@@ -53,13 +61,18 @@ export function DataTransferCard() {
       toast.error((e as Error).message);
     } finally {
       setBusy(null);
+      setPct(0);
     }
   };
 
   const confirmImport = async () => {
     if (!preview) return;
     try {
-      const result = await applyImport(preview, (label) => setBusy(`Importing ${label}…`), importPick);
+      const result = await applyImport(
+        preview,
+        (label, percent) => step(`Importing ${label}…`, percent),
+        importPick,
+      );
       if (result.failures.length) toast.warning(`Import hua, lekin ${result.failures.length} items skip hue`);
       else
         toast.success(
@@ -71,8 +84,10 @@ export function DataTransferCard() {
       toast.error((e as Error).message);
     } finally {
       setBusy(null);
+      setPct(0);
     }
   };
+
 
   const toggle = (which: "export" | "import", id: keyof Selection) => {
     const set = which === "export" ? setExportPick : setImportPick;
@@ -141,7 +156,21 @@ export function DataTransferCard() {
         />
       </div>
 
-      {busy ? <p className="mt-3 text-xs font-semibold text-muted-foreground">{busy}</p> : null}
+      {busy ? (
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span>{busy}</span>
+            <span className="num">{Math.min(100, Math.max(0, Math.round(pct)))}%</span>
+          </div>
+          <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-secondary">
+            <div
+              className="h-full rounded-full bg-foreground transition-[width] duration-300"
+              style={{ width: `${Math.min(100, Math.max(3, pct))}%` }}
+            />
+          </div>
+        </div>
+      ) : null}
+
 
       {preview ? (
         <div className="mt-4 rounded-2xl border border-border bg-panel p-4">
