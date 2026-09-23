@@ -6,6 +6,7 @@ import {
   ArchiveRestore,
   CalendarRange,
   LayoutDashboard,
+  Mail,
   Palette,
   Settings2,
   Smartphone,
@@ -24,6 +25,7 @@ const GROUPS: DashboardNavGroup[] = [
   ] },
   { label: "Operations", items: [
     { to: "/admin/schedule", label: "Schedule", icon: CalendarRange },
+    { to: "/admin/email", label: "Email Center", icon: Mail },
     { to: "/admin/notifications", label: "Notifications", icon: Bell },
   ] },
   { label: "Product", items: [

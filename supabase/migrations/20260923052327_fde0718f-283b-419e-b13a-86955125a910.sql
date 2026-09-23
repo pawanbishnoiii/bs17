@@ -1,0 +1,17 @@
+REVOKE ALL ON FUNCTION public.snapshot_streak_day(date) FROM anon, authenticated;
+REVOKE ALL ON FUNCTION public.refresh_all_daily_plans(date) FROM anon, authenticated;
+REVOKE ALL ON FUNCTION public.refresh_user_study_plan(uuid, date) FROM anon, authenticated;
+REVOKE ALL ON FUNCTION public.close_stale_sessions() FROM anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.snapshot_streak_day(date) TO service_role;
+GRANT EXECUTE ON FUNCTION public.refresh_all_daily_plans(date) TO service_role;
+GRANT EXECUTE ON FUNCTION public.refresh_user_study_plan(uuid, date) TO service_role;
+GRANT EXECUTE ON FUNCTION public.close_stale_sessions() TO service_role;
+REVOKE ALL ON FUNCTION public.refresh_my_study_plan(date) FROM anon;
+REVOKE ALL ON FUNCTION public.schedule_my_daily_plan(date) FROM anon;
+REVOKE ALL ON FUNCTION public.complete_my_revision(text, integer, uuid) FROM anon;
+REVOKE ALL ON FUNCTION public.ensure_my_subject_targets() FROM anon;
+REVOKE ALL ON FUNCTION public.log_reading(text, integer) FROM anon;
+REVOKE ALL ON FUNCTION public.undo_reading(text) FROM anon;
+REVOKE ALL ON FUNCTION public.touch_last_seen() FROM anon;
+REVOKE ALL ON FUNCTION public.chapter_pace() FROM anon;
+REVOKE ALL ON FUNCTION public.set_plan_item_status(uuid, text) FROM anon;

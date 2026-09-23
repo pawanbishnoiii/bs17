@@ -32,12 +32,14 @@ import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminAndroidRouteImport } from './routes/_authenticated/admin/android'
 import { Route as AuthenticatedAdminBrandingRouteImport } from './routes/_authenticated/admin/branding'
 import { Route as AuthenticatedAdminDataRouteImport } from './routes/_authenticated/admin/data'
+import { Route as AuthenticatedAdminEmailRouteImport } from './routes/_authenticated/admin/email'
 import { Route as AuthenticatedAdminErrorsRouteImport } from './routes/_authenticated/admin/errors'
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin/notifications'
 import { Route as AuthenticatedAdminScheduleRouteImport } from './routes/_authenticated/admin/schedule'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as ApiPublicCronRouteImport } from './routes/api/public/cron'
+import { Route as ApiPublicCronEmailQueueRouteImport } from './routes/api/public/cron/email-queue'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -156,6 +158,11 @@ const AuthenticatedAdminDataRoute = AuthenticatedAdminDataRouteImport.update({
   path: '/data',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminEmailRoute = AuthenticatedAdminEmailRouteImport.update({
+  id: '/email',
+  path: '/email',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminErrorsRoute =
   AuthenticatedAdminErrorsRouteImport.update({
     id: '/errors',
@@ -190,6 +197,11 @@ const ApiPublicCronRoute = ApiPublicCronRouteImport.update({
   path: '/api/public/cron',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronEmailQueueRoute = ApiPublicCronEmailQueueRouteImport.update({
+  id: '/email-queue',
+  path: '/email-queue',
+  getParentRoute: () => ApiPublicCronRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -213,13 +225,15 @@ export interface FileRoutesByFullPath {
   '/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/admin/branding': typeof AuthenticatedAdminBrandingRoute
   '/admin/data': typeof AuthenticatedAdminDataRoute
+  '/admin/email': typeof AuthenticatedAdminEmailRoute
   '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/cron': typeof ApiPublicCronRoute
+  '/api/public/cron': typeof ApiPublicCronRouteWithChildren
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/email-queue': typeof ApiPublicCronEmailQueueRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -242,13 +256,15 @@ export interface FileRoutesByTo {
   '/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/admin/branding': typeof AuthenticatedAdminBrandingRoute
   '/admin/data': typeof AuthenticatedAdminDataRoute
+  '/admin/email': typeof AuthenticatedAdminEmailRoute
   '/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/cron': typeof ApiPublicCronRoute
+  '/api/public/cron': typeof ApiPublicCronRouteWithChildren
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/email-queue': typeof ApiPublicCronEmailQueueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -274,13 +290,15 @@ export interface FileRoutesById {
   '/_authenticated/admin/android': typeof AuthenticatedAdminAndroidRoute
   '/_authenticated/admin/branding': typeof AuthenticatedAdminBrandingRoute
   '/_authenticated/admin/data': typeof AuthenticatedAdminDataRoute
+  '/_authenticated/admin/email': typeof AuthenticatedAdminEmailRoute
   '/_authenticated/admin/errors': typeof AuthenticatedAdminErrorsRoute
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/_authenticated/admin/schedule': typeof AuthenticatedAdminScheduleRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/api/public/cron': typeof ApiPublicCronRoute
+  '/api/public/cron': typeof ApiPublicCronRouteWithChildren
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/email-queue': typeof ApiPublicCronEmailQueueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -306,6 +324,7 @@ export interface FileRouteTypes {
     | '/admin/android'
     | '/admin/branding'
     | '/admin/data'
+    | '/admin/email'
     | '/admin/errors'
     | '/admin/notifications'
     | '/admin/schedule'
@@ -313,6 +332,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/public/cron'
     | '/admin/'
+    | '/api/public/cron/email-queue'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -335,6 +355,7 @@ export interface FileRouteTypes {
     | '/admin/android'
     | '/admin/branding'
     | '/admin/data'
+    | '/admin/email'
     | '/admin/errors'
     | '/admin/notifications'
     | '/admin/schedule'
@@ -342,6 +363,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/public/cron'
     | '/admin'
+    | '/api/public/cron/email-queue'
   id:
     | '__root__'
     | '/'
@@ -366,6 +388,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/android'
     | '/_authenticated/admin/branding'
     | '/_authenticated/admin/data'
+    | '/_authenticated/admin/email'
     | '/_authenticated/admin/errors'
     | '/_authenticated/admin/notifications'
     | '/_authenticated/admin/schedule'
@@ -373,6 +396,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/users'
     | '/api/public/cron'
     | '/_authenticated/admin/'
+    | '/api/public/cron/email-queue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -382,7 +406,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   WelcomeRoute: typeof WelcomeRoute
   Char126oauthInitiateRoute: typeof Char126oauthInitiateRoute
-  ApiPublicCronRoute: typeof ApiPublicCronRoute
+  ApiPublicCronRoute: typeof ApiPublicCronRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -548,6 +572,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDataRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/email': {
+      id: '/_authenticated/admin/email'
+      path: '/email'
+      fullPath: '/admin/email'
+      preLoaderRoute: typeof AuthenticatedAdminEmailRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/errors': {
       id: '/_authenticated/admin/errors'
       path: '/errors'
@@ -590,6 +621,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/email-queue': {
+      id: '/api/public/cron/email-queue'
+      path: '/email-queue'
+      fullPath: '/api/public/cron/email-queue'
+      preLoaderRoute: typeof ApiPublicCronEmailQueueRouteImport
+      parentRoute: typeof ApiPublicCronRoute
+    }
   }
 }
 
@@ -598,6 +636,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAndroidRoute: typeof AuthenticatedAdminAndroidRoute
   AuthenticatedAdminBrandingRoute: typeof AuthenticatedAdminBrandingRoute
   AuthenticatedAdminDataRoute: typeof AuthenticatedAdminDataRoute
+  AuthenticatedAdminEmailRoute: typeof AuthenticatedAdminEmailRoute
   AuthenticatedAdminErrorsRoute: typeof AuthenticatedAdminErrorsRoute
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
   AuthenticatedAdminScheduleRoute: typeof AuthenticatedAdminScheduleRoute
@@ -612,6 +651,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAndroidRoute: AuthenticatedAdminAndroidRoute,
     AuthenticatedAdminBrandingRoute: AuthenticatedAdminBrandingRoute,
     AuthenticatedAdminDataRoute: AuthenticatedAdminDataRoute,
+    AuthenticatedAdminEmailRoute: AuthenticatedAdminEmailRoute,
     AuthenticatedAdminErrorsRoute: AuthenticatedAdminErrorsRoute,
     AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
     AuthenticatedAdminScheduleRoute: AuthenticatedAdminScheduleRoute,
@@ -666,6 +706,18 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface ApiPublicCronRouteChildren {
+  ApiPublicCronEmailQueueRoute: typeof ApiPublicCronEmailQueueRoute
+}
+
+const ApiPublicCronRouteChildren: ApiPublicCronRouteChildren = {
+  ApiPublicCronEmailQueueRoute: ApiPublicCronEmailQueueRoute,
+}
+
+const ApiPublicCronRouteWithChildren = ApiPublicCronRoute._addFileChildren(
+  ApiPublicCronRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -673,7 +725,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   WelcomeRoute: WelcomeRoute,
   Char126oauthInitiateRoute: Char126oauthInitiateRoute,
-  ApiPublicCronRoute: ApiPublicCronRoute,
+  ApiPublicCronRoute: ApiPublicCronRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
