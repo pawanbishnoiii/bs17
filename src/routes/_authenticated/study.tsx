@@ -415,50 +415,191 @@ function StudySetupPage() {
 
                 {step === 2 ? (
                   <motion.div key="step-2" {...stepMotion} className="mt-5">
-                    <h2 className="text-lg font-bold sm:text-xl">2. Chapter or topic</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {activeSubject
-                        ? `Choose a chapter of ${activeSubject.name}, or type exactly what you will study.`
-                        : "Type what you will study in this session."}
-                    </p>
-
-                    {form.chapter ? (
-                      <div className="mt-4 flex items-center gap-3 rounded-2xl bg-foreground p-4 text-background">
-                        <Check className="size-5 shrink-0" />
-                        <span className="min-w-0 flex-1 truncate text-sm font-bold">{form.chapter}</span>
-                        <Button variant="outline" size="sm" className="border-background/25 bg-transparent text-background" onClick={() => setForm({ ...form, chapter: "", topic: "" })}>Change</Button>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-lg font-bold sm:text-xl">2. Chapter or topic</h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Pick a chapter of {activeSubject?.name ?? "the subject"} — and a type, if it has any.
+                        </p>
                       </div>
-                    ) : activeSubject && activeSubject.chapters.length > 0 ? (
-                      <div className="mt-4 grid grid-cols-2 gap-2">
-                        {activeSubject.chapters.map((c) => {
-                          const on = form.chapter === c;
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" disabled={!activeSubject} onClick={() => setChapterSheet(true)}>
+                          + New chapter / topic
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={!activeSubject || (chapters.data ?? []).length === 0}
+                          onClick={() => setTypeSheet(true)}
+                        >
+                          + Add type
+                        </Button>
+                      </div>
+                    </div>
+
+                    {!activeSubject ? null : chapters.isLoading ? (
+                      <div className="mt-4 grid gap-2">
+                        {[0, 1, 2].map((i) => (
+                          <span key={i} className="h-12 animate-pulse rounded-2xl bg-muted" />
+                        ))}
+                      </div>
+                    ) : (chapters.data ?? []).length === 0 ? (
+                      <p className="mt-4 text-xs text-muted-foreground">
+                        No chapters yet for this subject — add one with "+ New chapter / topic".
+                      </p>
+                    ) : (
+                      <div className="mt-4 grid gap-2">
+                        {(chapters.data ?? []).map((c: ChapterRow) => {
+                          const on = chapterId === c.id;
+                          const editing = editChapter?.id === c.id;
                           return (
-                            <motion.button
-                              key={c}
-                              type="button"
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => { hapticSelect(); setForm({ ...form, chapter: c, topic: form.topic || c }); }}
-                              aria-pressed={on}
-                              className={`flex min-h-12 items-center gap-2 rounded-2xl border px-3 text-left text-sm font-semibold transition ${
-                                on
-                                  ? "border-transparent bg-foreground text-background"
-                                  : "border-border bg-secondary/50 text-muted-foreground"
+                            <div
+                              key={c.id}
+                              className={`rounded-2xl border-2 px-3 py-2.5 transition ${
+                                on ? "border-foreground bg-lavender-soft" : "border-border bg-panel"
                               }`}
                             >
-                              {on ? <Check className="size-3.5" /> : null}
-                              {c}
-                            </motion.button>
+                              {editing ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    value={editChapter.position}
+                                    onChange={(e) => setEditChapter({ ...editChapter, position: Number(e.target.value) })}
+                                    className="field-control w-16 px-2 py-1 text-sm"
+                                  />
+                                  <input
+                                    value={editChapter.name}
+                                    onChange={(e) => setEditChapter({ ...editChapter, name: e.target.value })}
+                                    className="field-control flex-1 px-2 py-1 text-sm"
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    disabled={saveChapterMutation.isPending}
+                                    onClick={() => saveChapterMutation.mutate(editChapter)}
+                                  >
+                                    <Check className="size-4" />
+                                  </Button>
+                                  <Button type="button" size="icon" variant="ghost" onClick={() => setEditChapter(null)}>
+                                    <X className="size-4" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      hapticSelect();
+                                      setChapterId(c.id);
+                                      setSubtopicId("");
+                                      setForm({ ...form, chapter: c.name, topic: form.topic || c.name });
+                                    }}
+                                    aria-pressed={on}
+                                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                                  >
+                                    <span className="num grid size-7 shrink-0 place-items-center rounded-full bg-foreground/10 text-xs font-extrabold">
+                                      {c.position}
+                                    </span>
+                                    <span className="min-w-0 flex-1 truncate text-sm font-semibold">{c.name}</span>
+                                    {on ? <Check className="size-4 shrink-0" /> : null}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    aria-label={`Rename ${c.name}`}
+                                    onClick={() => setEditChapter({ id: c.id, name: c.name, position: c.position })}
+                                    className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                                  >
+                                    <Pencil className="size-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
-                    ) : activeSubject ? (
-                      <p className="mt-4 text-xs text-muted-foreground">
-                        Is subject me chapters nahi — niche apna topic type karo.
-                      </p>
+                    )}
+
+                    {chapterId ? (
+                      subtopics.isLoading ? (
+                        <div className="mt-5 grid gap-2">
+                          {[0, 1].map((i) => (
+                            <span key={i} className="h-11 animate-pulse rounded-2xl bg-muted" />
+                          ))}
+                        </div>
+                      ) : hasSubtopics ? (
+                        <div className="mt-5">
+                          <p className="text-sm font-semibold">Pick a type</p>
+                          <div className="mt-2 grid gap-2">
+                            {(subtopics.data ?? []).map((s: ChapterSubtopicRow) => {
+                              const on = subtopicId === s.id;
+                              const editing = editSubtopic?.id === s.id;
+                              return (
+                                <div
+                                  key={s.id}
+                                  className={`rounded-2xl border-2 px-3 py-2 transition ${
+                                    on ? "border-foreground bg-lavender-soft" : "border-border bg-secondary/40"
+                                  }`}
+                                >
+                                  {editing ? (
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        min={1}
+                                        value={editSubtopic.position}
+                                        onChange={(e) => setEditSubtopic({ ...editSubtopic, position: Number(e.target.value) })}
+                                        className="field-control w-16 px-2 py-1 text-sm"
+                                      />
+                                      <input
+                                        value={editSubtopic.name}
+                                        onChange={(e) => setEditSubtopic({ ...editSubtopic, name: e.target.value })}
+                                        className="field-control flex-1 px-2 py-1 text-sm"
+                                      />
+                                      <Button
+                                        type="button"
+                                        size="icon"
+                                        variant="ghost"
+                                        disabled={saveSubtopicMutation.isPending}
+                                        onClick={() => saveSubtopicMutation.mutate(editSubtopic)}
+                                      >
+                                        <Check className="size-4" />
+                                      </Button>
+                                      <Button type="button" size="icon" variant="ghost" onClick={() => setEditSubtopic(null)}>
+                                        <X className="size-4" />
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => { hapticSelect(); setSubtopicId(s.id); }}
+                                        aria-pressed={on}
+                                        className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm font-semibold"
+                                      >
+                                        {on ? <Check className="size-3.5 shrink-0" /> : null}
+                                        <span className="min-w-0 truncate">{s.position}. {s.name}</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        aria-label={`Rename ${s.name}`}
+                                        onClick={() => setEditSubtopic({ id: s.id, name: s.name, position: s.position })}
+                                        className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                                      >
+                                        <Pencil className="size-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null
                     ) : null}
 
                     <label className="mt-5 block text-sm font-semibold" htmlFor="study-topic">
-                      Topic or notes <span className="font-normal text-muted-foreground">(optional if chapter chosen)</span>
+                      Topic or notes <span className="font-normal text-muted-foreground">(optional)</span>
                     </label>
                     <input
                       id="study-topic"
