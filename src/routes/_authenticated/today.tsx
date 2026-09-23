@@ -33,6 +33,7 @@ import { TodayStudyAnalytics } from "@/components/TodayStudyAnalytics";
 import { LevelProgressCard } from "@/components/LevelProgressCard";
 import { NoticeBoard } from "@/components/NoticeBoard";
 import { studyStreak } from "@/lib/streak";
+import { dayProgress } from "@/lib/goals";
 
 import {
   DAYS,
@@ -56,6 +57,7 @@ import {
   monthlyHistory,
   reorderBlocks,
   subjectProgress,
+  syncIdentityToProfile,
   updateSubject,
   startBreak,
   startOfToday,
@@ -96,6 +98,7 @@ function TodayPage() {
   const [startOpen, setStartOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [scope, setScope] = useState<"day" | "week" | "month">("day");
+  const [statTab, setStatTab] = useState<"today" | "week" | "month">("today");
   const [subjScope, setSubjScope] = useState<"1D" | "1W" | "1M">("1D");
   const [editSubject, setEditSubject] = useState<{
     id: string;
@@ -122,6 +125,7 @@ function TodayPage() {
   const targets = useQuery({ queryKey: ["targets"], queryFn: fetchTargets });
   const settings = useQuery({ queryKey: ["settings"], queryFn: fetchSettings });
   const xp = useQuery({ queryKey: ["xp"], queryFn: fetchXp });
+  const profile = useQuery({ queryKey: ["profile"], queryFn: syncIdentityToProfile });
 
   const motivations = useQuery({
     queryKey: ["motivations"],
@@ -185,6 +189,22 @@ function TodayPage() {
   const heroMood = mascotState({ goalHit: todayMin >= dailyGoal * 60, streak });
 
   const activeTargets = (targets.data ?? []).filter((t) => t.is_active);
+
+  // Percentage based daily goal: every activity type earns its own rate.
+  const todaySessions = useMemo(() => {
+    const since = startOfToday().getTime();
+    return all.filter((s) => new Date(s.started_at).getTime() >= since);
+  }, [all]);
+  const today = useMemo(() => dayProgress(todaySessions), [todaySessions]);
+
+  const firstName =
+    (profile.data?.first_name ?? profile.data?.display_name ?? "").trim().split(" ")[0] ?? "";
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  })();
 
   const quote = useMemo(() => {
     const qs = (motivations.data ?? []).filter((m) => m.kind === "quote");
@@ -310,97 +330,123 @@ function TodayPage() {
         />
       ) : null}
 
-      <div className="app-page today-dashboard space-y-4 sm:space-y-6">
-        {/* Focus card — pastel panel with goal, progress and one clear action */}
-        <section className="surface-card today-hero overflow-hidden bg-[var(--lavender-soft)] p-5 sm:p-7 lg:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
+      <div className="app-page today-dashboard space-y-3 pt-3 sm:space-y-4">
+        {/* Focus hero — greeting, today's focus, one clear action */}
+        <section className="surface-card today-hero overflow-hidden bg-[var(--lavender)] p-5">
+          <div className="flex items-start gap-4">
             <div className="min-w-0 flex-1">
-              <p className="section-label">Today</p>
-              <h1 className="mt-2 text-[clamp(1.6rem,3.4vw,2.4rem)] leading-[1.1] font-extrabold tracking-tight">
+              <p className="text-[13px] font-semibold text-muted-foreground">
+                {greeting}
+                {firstName ? `, ${firstName}` : ""}
+              </p>
+              <h1 className="mt-1 text-[clamp(1.5rem,3vw,2rem)] leading-[1.1] font-extrabold tracking-tight">
                 {todayMin > 0 ? `${fmtHM(todayMin)} focused today` : "Start your first session"}
               </h1>
-              <p className="mt-2 text-[15px] leading-6 text-muted-foreground">
-                Daily goal {fmtHM(dailyGoal * 60)} ·{" "}
-                {Math.min(100, Math.round((todayMin / 60 / dailyGoal) * 100))}% complete
-              </p>
 
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-panel py-1 pr-3 pl-1.5 text-xs font-bold">
-                  <StreakFlame days={streak} showCount={false} size={22} />
+              <div className="mt-3 flex items-center gap-2 text-[11px] font-semibold">
+                <span className="inline-flex items-center gap-1 rounded-full bg-panel py-0.5 pr-2.5 pl-1 font-bold">
+                  <StreakFlame days={streak} showCount={false} size={18} />
                   {streak === 1 ? "1 day streak" : `${streak} day streak`}
                 </span>
-                <span className="rounded-full bg-panel/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-                  {streakInfo.shieldActive
-                    ? `${streakInfo.shieldDaysLeft} lifeline days left`
-                    : streak > 0
-                      ? "Weekly 3-day lifeline ready"
-                      : "Reach 100% to start your streak"}
+                <span className="rounded-full bg-panel/70 px-2.5 py-1 text-muted-foreground">
+                  {streakInfo.lifelinesLeft} lifeline{streakInfo.lifelinesLeft === 1 ? "" : "s"} left this week
                 </span>
               </div>
 
-              <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-panel">
+              <div className="mt-3 flex items-baseline justify-between text-[12px] font-semibold text-muted-foreground">
+                <span>Daily goal</span>
+                <span className="tabular-nums">{today.displayPercent}%</span>
+              </div>
+              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-panel">
                 <div
                   className="h-full rounded-full bg-foreground transition-[width] duration-1000 ease-out"
-                  style={{ width: `${Math.min(100, (todayMin / 60 / dailyGoal) * 100)}%` }}
+                  style={{ width: `${today.displayPercent}%` }}
                 />
               </div>
-
-              <div className="mt-5 flex items-center gap-3">
-                <button
-                  ref={ctaRef}
-                  onClick={() => navigate({ to: running.data ? "/timer" : "/study" })}
-                  className="inline-flex h-13 min-h-12 flex-1 items-center justify-center rounded-full bg-foreground px-6 text-[15px] font-bold text-background sm:flex-none sm:px-10"
-                >
-                  {running.data ? "Open running timer" : "Start study"}
-                </button>
-                <Mascot state={heroMood} size={48} className="shrink-0" />
-              </div>
             </div>
-            <div className="today-hero-motion pointer-events-none mx-auto w-36 shrink-0 select-none sm:w-48 lg:w-56">
+            <div className="pointer-events-none w-[70px] shrink-0 select-none sm:w-20">
               <img
                 src={todayHeroArt}
                 alt="Student reading with a laptop, calendar and focus clock"
                 width={1280}
                 height={960}
-                className="aspect-[4/3] h-full w-full object-contain float-soft"
+                className="h-full w-full object-contain float-soft"
               />
             </div>
           </div>
+
+          <button
+            ref={ctaRef}
+            onClick={() => navigate({ to: running.data ? "/timer" : "/study" })}
+            className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 text-[15px] font-bold text-background"
+          >
+            ▶ {running.data ? "Open running timer" : "Continue study"}
+          </button>
         </section>
 
-        {/* Compact period summaries */}
-        <section className="today-summary grid grid-cols-3 gap-2 sm:gap-3">
-          {[
-            { label: "Today", minutes: todayMin, bg: "var(--lavender-soft)" },
-            { label: "This week", minutes: weekMin, bg: "var(--blue-soft)" },
-            { label: "This month", minutes: monthMin, bg: "var(--mint-soft)" },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="surface-card min-w-0 p-3 sm:p-5"
-              style={{ background: s.bg }}
+        {/* Single segmented stats strip — Today · Week · Month */}
+        <section className="surface-card flex items-center gap-1 p-1.5">
+          {([
+            { key: "today", label: "Today", minutes: todayMin },
+            { key: "week", label: "Week", minutes: weekMin },
+            { key: "month", label: "Month", minutes: monthMin },
+          ] as const).map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => setStatTab(s.key)}
+              className={`min-w-0 flex-1 rounded-[20px] px-3 py-2.5 text-left transition-colors duration-300 ${
+                statTab === s.key ? "bg-[var(--blue)]" : ""
+              }`}
             >
-              <p className="truncate text-base leading-none font-extrabold tabular-nums sm:text-xl">
-                <CountUp value={Math.floor(s.minutes / 60)} decimals={0} suffix="h" />
-                <span className="ml-1 text-xs opacity-70">
-                  {String(Math.round(s.minutes % 60)).padStart(2, "0")}m
-                </span>
-              </p>
-              <p className="mt-2 text-xs font-semibold text-muted-foreground">{s.label}</p>
-            </div>
+              <span className="block truncate text-[11px] font-semibold text-muted-foreground">
+                {s.label}
+              </span>
+              <span
+                key={`${s.key}-${s.minutes}`}
+                className="mt-0.5 block truncate text-base font-extrabold tabular-nums stat-fade"
+              >
+                {fmtHM(s.minutes)}
+              </span>
+            </button>
           ))}
         </section>
 
-        {/* Private notice board */}
-        <NoticeBoard />
-
-        {/* Compulsory reading — daily newspaper + monthly magazine */}
-        <ReadingHabitCard />
-
+        {/* Next up — the plan comes before everything else */}
         <DailyPlanCard
           sessions={all}
           onStart={(item) => navigate({ to: "/study", search: { plan: item.id } })}
         />
+
+        {/* Private notice board — one collapsed row */}
+        <NoticeBoard />
+
+        {/* Quick study modes — the app's frequent-use launcher */}
+        <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {([
+            { kind: "reading", label: "Reading", emoji: "📖", bg: "var(--yellow)" },
+            { kind: "class", label: "Video / Class", emoji: "💻", bg: "var(--blue)" },
+            { kind: "revision", label: "Revision", emoji: "🔁", bg: "var(--lavender)" },
+            { kind: "test", label: "Test", emoji: "📝", bg: "var(--peach-soft)" },
+          ] as const).map((m) => (
+            <button
+              key={m.kind}
+              type="button"
+              onClick={() => navigate({ to: "/study", search: { kind: m.kind } })}
+              className="surface-card flex items-center gap-2 px-3 py-3 text-left"
+              style={{ background: m.bg }}
+            >
+              <span aria-hidden="true" className="text-xl">
+                {m.emoji}
+              </span>
+              <span className="min-w-0 truncate text-[13px] font-bold">{m.label}</span>
+            </button>
+          ))}
+        </section>
+
+        {/* Compulsory reading — daily newspaper + monthly magazine */}
+        <ReadingHabitCard />
+
 
         <LevelProgressCard level={xp.data?.level ?? 1} totalXp={xp.data?.total_xp ?? 0} dailyGoal={dailyGoal} />
 

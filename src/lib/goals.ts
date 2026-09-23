@@ -17,10 +17,14 @@ export type PercentPerHour = {
 };
 
 export const DEFAULT_PERCENT_PER_HOUR: PercentPerHour = {
-  revision: 25,
+  /** Re-reading / re-revision of an already studied chapter. */
+  revision: 23,
+  /** Book or notes reading. */
   reading: 20,
-  class: 18,
-  newspaper: 20,
+  /** Online / recorded class. */
+  class: 15,
+  /** Newspaper: 2% for every 5 minutes = 24% per hour. */
+  newspaper: 24,
   practice: 20,
   test: 20,
 };

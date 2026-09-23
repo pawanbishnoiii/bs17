@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, GraduationCap, Plus, RotateCcw, Trash2, Video } from "lucide-react";
+import { CheckCircle2, GraduationCap, Headphones, Laptop, Plus, RotateCcw, Trash2, Video } from "lucide-react";
 import {
   createClass,
   deleteClass,

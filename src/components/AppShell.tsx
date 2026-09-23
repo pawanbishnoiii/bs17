@@ -176,7 +176,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className={`app-backdrop min-h-screen text-foreground ${hideNav ? "" : "lg:grid lg:grid-cols-[232px_minmax(0,1fr)]"}`}>
       {!hideNav ? (
-        <aside className="sticky top-0 hidden h-screen flex-col border-r border-border bg-panel px-4 py-6 lg:flex">
+        <aside className="sticky top-0 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-border bg-panel px-4 py-6 lg:flex">
           <Link to="/today" className="flex items-center gap-3 px-2">
             <img src={appLogo} alt="Bnoy Study" width={1024} height={1024} className="size-11 rounded-2xl object-contain" />
             <span><span className="font-heading block text-lg font-extrabold">Bnoy Study</span><span className="text-xs text-muted-foreground">Study OS</span></span>
