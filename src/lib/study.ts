@@ -225,22 +225,46 @@ export type ChapterSubtopicRow = {
 /** All chapters of one subject, ordered for display and easy re-numbering. */
 export async function fetchChapters(subject_id: string): Promise<ChapterRow[]> {
   const user_id = await uid();
-  const { data, error } = await supabase
-    .from("chapters")
-    .select("id,subject_id,name,position,estimated_minutes")
-    .eq("user_id", user_id)
-    .eq("subject_id", subject_id)
-    .order("position", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
-  if (error) throw error;
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    subject_id: row.subject_id,
-    name: row.name,
-    position: row.position ?? 0,
-    estimated_minutes: row.estimated_minutes ?? null,
-  }));
+  const read = async () => {
+    const { data, error } = await supabase
+      .from("chapters")
+      .select("id,subject_id,name,position,estimated_minutes")
+      .eq("user_id", user_id)
+      .eq("subject_id", subject_id)
+      .order("position", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return (data ?? []).map((row: any) => ({
+      id: row.id as string,
+      subject_id: row.subject_id as string,
+      name: row.name as string,
+      position: row.position ?? 0,
+      estimated_minutes: row.estimated_minutes ?? null,
+    }));
+  };
+
+  let rows = await read();
+  if (rows.length === 0) {
+    // Self-heal: subjects imported from a backup keep their chapter names inside
+    // the subject record. Copy them into the chapters table the app reads from.
+    const { data: subject } = await supabase
+      .from("subjects")
+      .select("chapters")
+      .eq("id", subject_id)
+      .maybeSingle();
+    const legacy = normaliseChapters(
+      Array.isArray((subject as any)?.chapters) ? ((subject as any).chapters as string[]) : [],
+    );
+    if (legacy.length > 0) {
+      const { error } = await supabase.from("chapters").insert(
+        legacy.map((name, i) => ({ user_id, subject_id, name, position: i + 1 })) as any,
+      );
+      if (!error) rows = await read();
+    }
+  }
+  return rows;
 }
+
 
 /** Add one or several chapters to a subject in one go, auto-numbered after the existing ones. */
 export async function addChapters(subject_id: string, names: string[]) {
