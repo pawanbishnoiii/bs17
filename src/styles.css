@@ -833,3 +833,9 @@ button { min-height: 44px; }
 .dark .shimmer::after {
   background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.07), transparent);
 }
+
+@keyframes stat-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.stat-fade { animation: stat-fade 0.28s ease-out; }
