@@ -290,3 +290,47 @@ export function subjectPerformance(
     })
     .sort((a, b) => b.minutes - a.minutes);
 }
+
+/** Plan rows for a date range — used by the week / month view on the board. */
+export async function fetchPlanRange(from: string, to: string): Promise<PlanItem[]> {
+  const { data, error } = await supabase
+    .from("daily_study_plan_items")
+    .select(PLAN_COLUMNS)
+    .gte("plan_date", from)
+    .lte("plan_date", to)
+    .order("plan_date", { ascending: true })
+    .order("priority", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as unknown as PlanItem[];
+}
+
+/** Start (Monday) and end of the week containing `d`, as local date keys. */
+export function weekRange(d = new Date()) {
+  const start = new Date(d);
+  start.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  return { from: localDateKey(start), to: localDateKey(end) };
+}
+
+/** First and last day of the month containing `d`, as local date keys. */
+export function monthRange(d = new Date()) {
+  return {
+    from: localDateKey(new Date(d.getFullYear(), d.getMonth(), 1)),
+    to: localDateKey(new Date(d.getFullYear(), d.getMonth() + 1, 0)),
+  };
+}
+
+/** Minutes planned per chapter and per activity type, for the summary view. */
+export function planTotals(items: PlanItem[]) {
+  const chapters = new Map<string, number>();
+  const kinds = new Map<string, number>();
+  for (const i of items) {
+    const key = i.chapter_name ?? i.subject_name ?? "Focus block";
+    chapters.set(key, (chapters.get(key) ?? 0) + i.target_minutes);
+    kinds.set(i.session_kind, (kinds.get(i.session_kind) ?? 0) + i.target_minutes);
+  }
+  const sort = (m: Map<string, number>) =>
+    [...m.entries()].sort((a, b) => b[1] - a[1]).map(([label, minutes]) => ({ label, minutes }));
+  return { chapters: sort(chapters), kinds: sort(kinds) };
+}

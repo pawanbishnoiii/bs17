@@ -677,7 +677,7 @@ function StudySetupPage() {
                     Next <ArrowRight className="size-4" />
                   </Button>
                 ) : (
-                  <Button onClick={() => start.mutate()} disabled={start.isPending} className="gap-2">
+                  <Button onClick={() => start.mutate()} disabled={start.isPending || !form.kind || !focusChosen} className="gap-2">
                     <Clock3 className="size-4" />
                     {start.isPending ? "Starting…" : "Start timer"}
                   </Button>

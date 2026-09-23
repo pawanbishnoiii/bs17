@@ -3,12 +3,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ChevronRight,
+  Copy,
   Download,
   FileText,
   FolderPlus,
   Home,
   Link2,
   Music,
+  Pencil,
   Play,
   RefreshCw,
   Trash2,
@@ -29,11 +31,13 @@ import {
   fetchMedia,
   humanSize,
   mediaUrl,
+  renameMedia,
   syncSystemFolders,
   uploadMedia,
   type LibraryFolder,
   type LibraryMedia,
 } from "@/lib/class-library";
+
 
 const GRADIENTS = [
   "linear-gradient(135deg,#ffd9c0,#ffb38a)",
@@ -145,6 +149,27 @@ export function ClassLibrary() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const rename = useMutation({
+    mutationFn: (v: { item: LibraryMedia; title: string }) => renameMedia(v.item.id, v.title),
+    onSuccess: () => {
+      refresh();
+      toast.success("Naam badal diya");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  async function copyLink(item: LibraryMedia) {
+    try {
+      const url = item.external_url ?? (await mediaUrl(item));
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copy ho gaya");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+
 
   // Signed links expire, so fetch one only while the viewer is open.
   useEffect(() => {
@@ -328,6 +353,26 @@ export function ClassLibrary() {
                       >
                         <Download className="size-3.5" />
                       </button>
+                      <button
+                        type="button"
+                        aria-label={`Rename ${item.title}`}
+                        onClick={() => {
+                          const title = window.prompt("Naya naam", item.title)?.trim();
+                          if (title && title !== item.title) rename.mutate({ item, title });
+                        }}
+                        className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Copy link for ${item.title}`}
+                        onClick={() => void copyLink(item)}
+                        className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground"
+                      >
+                        <Copy className="size-3.5" />
+                      </button>
+
                       <button
                         type="button"
                         aria-label={`Delete ${item.title}`}
