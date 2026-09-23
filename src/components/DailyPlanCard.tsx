@@ -262,15 +262,94 @@ export function DailyPlanCard({ sessions, title = "Your plan", onStart }: { sess
           })}
         </ul>
       )}
-      {ranked.length > TOP_TASKS_COUNT ? (
+      {ranked.length > TOP_TASKS_COUNT || showAll ? (
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
           className="mt-4 w-full rounded-2xl border border-border py-2.5 text-sm font-bold text-brand transition-colors hover:bg-secondary"
         >
-          {showAll ? "See less" : `See more (${ranked.length - TOP_TASKS_COUNT} more)`}
+          {showAll ? "See less" : `See more (${Math.max(0, ranked.length - TOP_TASKS_COUNT)} more)`}
         </button>
       ) : null}
+
+      {showAll ? (
+        <div className="mt-4 rounded-2xl border border-border p-3">
+          <div className="flex gap-1.5">
+            {(["day", "week", "month"] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRange(r)}
+                className={`rounded-full px-3 py-1.5 text-xs font-bold capitalize transition ${
+                  range === r ? "bg-foreground text-background" : "border border-border text-muted-foreground"
+                }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+
+          {range === "day" ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Week ya month chuno — chapter aur type ke hisaab se planned time aur aane wale revisions dikhenge.
+            </p>
+          ) : rangeQuery.isLoading ? (
+            <p className="mt-3 text-xs text-muted-foreground">Loading…</p>
+          ) : (rangeQuery.data ?? []).length === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">Is {range} ke liye abhi koi task nahi hai.</p>
+          ) : (
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-[11px] font-extrabold tracking-wide uppercase text-muted-foreground">By chapter</p>
+                <ul className="mt-2 space-y-1.5">
+                  {totals.chapters.slice(0, 8).map((row) => (
+                    <li key={row.label} className="flex items-center justify-between gap-3 text-xs">
+                      <span className="min-w-0 truncate font-semibold">{row.label}</span>
+                      <span className="shrink-0 text-muted-foreground">{fmtHM(row.minutes)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-[11px] font-extrabold tracking-wide uppercase text-muted-foreground">By type</p>
+                <ul className="mt-2 space-y-1.5">
+                  {totals.kinds.map((row) => (
+                    <li key={row.label} className="flex items-center justify-between gap-3 text-xs">
+                      <span className="min-w-0 truncate font-semibold capitalize">
+                        {KIND_LABEL[row.label] ?? row.label}
+                      </span>
+                      <span className="shrink-0 text-muted-foreground">{fmtHM(row.minutes)}</span>
+                    </li>
+                  ))}
+                </ul>
+                {upcoming.length ? (
+                  <>
+                    <p className="mt-3 text-[11px] font-extrabold tracking-wide uppercase text-muted-foreground">
+                      Next revisions
+                    </p>
+                    <ul className="mt-2 space-y-1.5">
+                      {upcoming.map((i) => (
+                        <li key={i.id} className="flex items-center justify-between gap-3 text-xs">
+                          <span className="min-w-0 truncate font-semibold">
+                            {i.chapter_name ?? i.subject_name ?? "Focus block"}
+                          </span>
+                          <span className="shrink-0 text-muted-foreground">
+                            {new Date(i.next_review_at!).toLocaleDateString(undefined, {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
+
     </section>
   );
 }
