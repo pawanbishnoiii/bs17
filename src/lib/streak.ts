@@ -11,6 +11,9 @@ const MIN_STREAK_MINUTES = 180;
 /** A half-goal day keeps the flame smouldering instead of resetting to zero. */
 const SAVE_RATIO = 0.5;
 
+/** Two missed days per calendar week can be covered without losing the streak. */
+export const WEEKLY_LIFELINES = 2;
+
 export type StreakInfo = {
   /** Consecutive qualifying days ending today (or yesterday if today is unfinished). */
   current: number;
@@ -35,6 +38,10 @@ export type StreakInfo = {
   milestonePct: number;
   shieldActive: boolean;
   shieldDaysLeft: number;
+  /** Lifelines already spent this week. */
+  lifelinesUsed: number;
+  /** Lifelines still available this week (out of WEEKLY_LIFELINES). */
+  lifelinesLeft: number;
   weightedProgress: number;
 };
 
@@ -159,8 +166,10 @@ export function studyStreak(sessions: Session[], dailyGoalHours: number): Streak
     week,
     milestone,
     milestonePct: milestone > 0 ? Math.min(100, Math.round((current / milestone) * 100)) : 0,
-    shieldActive: shieldDays > 0,
-    shieldDaysLeft: Math.max(0, 3 - shieldDays),
+    shieldActive: lifelinesUsed > 0,
+    shieldDaysLeft: lifelinesLeft,
+    lifelinesUsed,
+    lifelinesLeft,
     weightedProgress,
   };
 }
