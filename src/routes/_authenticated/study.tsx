@@ -122,8 +122,21 @@ function StudySetupPage() {
   const pace = useQuery({ queryKey: ["chapter-pace"], queryFn: fetchChapterPace });
   const activeSubject = (subjects.data ?? []).find((s) => s.id === form.subject_id);
 
+  const chapters = useQuery({
+    queryKey: ["chapters", form.subject_id],
+    queryFn: () => fetchChapters(form.subject_id),
+    enabled: !!form.subject_id,
+  });
+  const subtopics = useQuery({
+    queryKey: ["chapter_subtopics", chapterId],
+    queryFn: () => fetchChapterSubtopics(chapterId),
+    enabled: !!chapterId,
+  });
+  const hasSubtopics = (subtopics.data ?? []).length > 0;
+  const selectedSubtopic = (subtopics.data ?? []).find((s) => s.id === subtopicId);
+
   const subjectChosen = !!(form.subject_id || form.subject_name.trim());
-  const focusChosen = !!(form.chapter.trim() || form.topic.trim());
+  const focusChosen = !!chapterId && (subtopics.isLoading ? false : !hasSubtopics || !!subtopicId);
 
   // The timer lives on its own page — a live session always belongs there.
   useEffect(() => {
