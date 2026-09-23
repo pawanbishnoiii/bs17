@@ -26,6 +26,7 @@ export type EmailConfig = {
   reply_to: string | null;
   timeout_seconds: number;
   verify_ssl: boolean;
+  smtp_auth: boolean;
   has_password: boolean;
   has_api_key: boolean;
   last_verified_at: string | null;

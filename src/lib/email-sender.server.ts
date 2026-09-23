@@ -37,8 +37,8 @@ export function missingFields(cfg: EmailConfigRow): string[] {
     return [
       !cfg.smtp_host && "SMTP host",
       !cfg.smtp_port && "Port",
-      !cfg.smtp_user && "Username",
-      !cfg.smtp_password && "Password / app password",
+      (cfg as { smtp_auth?: boolean }).smtp_auth !== false && !cfg.smtp_user && "Username",
+      (cfg as { smtp_auth?: boolean }).smtp_auth !== false && !cfg.smtp_password && "Password / app password",
       !cfg.from_email && "From email",
     ].filter(Boolean) as string[];
   }
